@@ -47,7 +47,7 @@ export class DataService {
       if (!this.initialized && !this.initializing) {
         this.initializing = true;
 
-        return this.http.get<string>('/assets/data.csv', {responseType: 'text'})
+        this.http.get('/assets/data.csv', {responseType: 'text'})
           .catch(error => {
             let errorMessage = "Erreur lors de l'obtention des données : "+error.message;
             this.alertCtrl.create({
