@@ -3,6 +3,7 @@ import {NavController, NavParams} from 'ionic-angular';
 import {Theme} from "../../app/theme";
 import {DataService} from "../../app/data.service";
 import {SousThemeListPage} from "../sous-theme-list/sous-theme-list";
+import {Observable} from "rxjs/Observable";
 
 /**
  * Generated class for the ThemeListPage page.
@@ -16,10 +17,10 @@ import {SousThemeListPage} from "../sous-theme-list/sous-theme-list";
   templateUrl: 'theme-list.html',
 })
 export class ThemeListPage {
-  themes: Theme[];
+  themes$: Observable<Theme[]>;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, private dataService: DataService) {
-    this.themes = Array.from(dataService.themes.values());
+    this.themes$ = this.dataService.getThemes();
   }
 
   themeSelected(theme: Theme) {

@@ -15,6 +15,7 @@ import {ThemeListPage} from "../pages/theme-list/theme-list";
 import {SousThemeListPage} from "../pages/sous-theme-list/sous-theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {AtelierPage} from "../pages/atelier/atelier";
+import {HttpClientModule} from "@angular/common/http";
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import {AtelierPage} from "../pages/atelier/atelier";
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],

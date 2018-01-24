@@ -15,7 +15,7 @@
 
 <ion-content padding>
   <ion-list>
-    <button ion-item *ngFor="let theme of themes" (click)="themeSelected(theme)">
+    <button ion-item *ngFor="let theme of themes$ | async" (click)="themeSelected(theme)">
       {{theme.label}}
     </button>
   </ion-list>

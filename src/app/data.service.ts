@@ -5,6 +5,12 @@ import {SousTheme} from "./sousTheme";
 import {TrancheAge} from "./trancheAge";
 import {Atelier} from "./atelier";
 import {Geste} from "./geste";
+import {AlertController} from "ionic-angular";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs/Observable";
+import {Observer} from "rxjs/Observer";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/catch";
 
 @Injectable()
 export class DataService {
@@ -18,48 +24,99 @@ export class DataService {
   trancheAges: Map<string, TrancheAge> = new Map();
   ateliers: Atelier[] = [];
 
-  constructor() {
-    // inspiré par https://devdactic.com/csv-data-ionic/
-    // Documentation pour Papa.parse : http://papaparse.com/docs#strings
-    let data: { [key: string]: string }[] = Papa.parse(this.data, {header: true}).data;
+  private initialized: boolean = false;
+  private initializing: boolean = false;
 
-    for (let line of data) {
-      let themeStr = line.Theme;
-      let theme: Theme = this.themes.get(themeStr) || new Theme(themeStr);
-      this.themes.set(themeStr, theme);
+  constructor(private http: HttpClient, private alertCtrl: AlertController) {
+  }
 
-      let sousThemeStr = line.SousTheme;
-      let sousTheme: SousTheme = this.sousThemes.get(sousThemeStr) || new SousTheme(sousThemeStr);
-      this.sousThemes.set(sousThemeStr, sousTheme);
-
-      if (!theme.sousThemes.includes(sousTheme)) {
-        theme.sousThemes.push(sousTheme);
+  timeoutInit(observer: Observer<DataService>): void {
+    // timeout thanks to https://stackoverflow.com/a/44334611/535203
+    setTimeout(() => {
+      if (!this.initialized) {
+        this.timeoutInit(observer);
+      } else {
+        observer.next(this);
+        observer.complete();
       }
+    }, 200);
+  }
 
-      let atelier: Atelier = {
-        sousTheme: sousTheme,
-        accueil: line.Accueil,
-        parole: {
-          titre: line['Parole.Titre'],
-          texte: line['Parole.Texte'],
-          reference: line['Parole.Reference']
-        },
-        geste: new Geste(
-          line['Geste.Titre'],
-          line['Geste.Texte'],
-        ),
-        envoi: line.Envoi,
-        trancheAges: line['TrancheAge[]'].split(',')
-          .map(label => {
-            let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
-            this.trancheAges.set(label, trancheAge);
-            return trancheAge;
+  init(): Observable<DataService> {
+    return Observable.create(observer => {
+      if (!this.initialized && !this.initializing) {
+        this.initializing = true;
+
+        return this.http.get<string>('/assets/data.csv', {responseType: 'text'})
+          .catch(error => {
+            let errorMessage = "Erreur lors de l'obtention des données : "+error.message;
+            this.alertCtrl.create({
+              title: "Erreur lors de l'obtention des données",
+              subTitle: errorMessage,
+              buttons: ['Ignorer']
+            });
+            console.error(errorMessage);
+            return [];
           })
-      };
-      sousTheme.ateliers.push(atelier);
+          .subscribe(dataCsv => {
+            // inspiré par https://devdactic.com/csv-data-ionic/
+            // Documentation pour Papa.parse : http://papaparse.com/docs#strings
+            let data: { [key: string]: string }[] = Papa.parse(dataCsv, {header: true}).data;
 
-      this.ateliers.push(atelier);
-    }
+            for (let line of data) {
+              if (line && line.Theme) {
+                let themeStr = line.Theme;
+                let theme: Theme = this.themes.get(themeStr) || new Theme(themeStr);
+                this.themes.set(themeStr, theme);
+
+                let sousThemeStr = line.SousTheme;
+                let sousTheme: SousTheme = this.sousThemes.get(sousThemeStr) || new SousTheme(sousThemeStr);
+                this.sousThemes.set(sousThemeStr, sousTheme);
+
+                if (!theme.sousThemes.includes(sousTheme)) {
+                  theme.sousThemes.push(sousTheme);
+                }
+
+                let atelier: Atelier = {
+                  sousTheme: sousTheme,
+                  accueil: line.Accueil,
+                  parole: {
+                    titre: line['Parole.Titre'],
+                    texte: line['Parole.Texte'],
+                    reference: line['Parole.Reference']
+                  },
+                  geste: new Geste(
+                    line['Geste.Titre'],
+                    line['Geste.Texte'],
+                  ),
+                  envoi: line.Envoi,
+                  trancheAges: line['TrancheAge[]'].split(',')
+                    .map(label => {
+                      let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
+                      this.trancheAges.set(label, trancheAge);
+                      return trancheAge;
+                    })
+                };
+                sousTheme.ateliers.push(atelier);
+
+                this.ateliers.push(atelier);
+              }
+            }
+
+            this.initialized = true;
+            this.initializing = false;
+
+            observer.next(this);
+            observer.complete();
+          });
+      } else {
+        this.timeoutInit(observer);
+      }
+    });
+  }
+
+  getThemes(): Observable<Theme[]> {
+    return this.init().map(dataService => Array.from(dataService.themes.values()));
   }
 
 }
