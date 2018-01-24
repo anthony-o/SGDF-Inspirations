@@ -1,6 +1,6 @@
 {
   "name": "SGDF-SpiBox",
-  "app_id": "",
+  "app_id": "167408ce",
   "type": "ionic-angular",
   "integrations": {
     "cordova": {}
