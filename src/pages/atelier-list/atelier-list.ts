@@ -1,24 +1,29 @@
-import { Component } from '@angular/core';
-import { NavController, NavParams } from 'ionic-angular';
+import {Component} from '@angular/core';
+import {NavController, NavParams} from 'ionic-angular';
 import {Atelier} from "../../app/atelier";
 import {AtelierPage} from "../atelier/atelier";
-
-/**
- * Generated class for the AtelierListPage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
+import {Observable} from "rxjs/Observable";
+import {DataService} from "../../app/data.service";
+import "rxjs/add/observable/of";
 
 @Component({
   selector: 'page-atelier-list',
   templateUrl: 'atelier-list.html',
 })
 export class AtelierListPage {
-  ateliers: Atelier[];
+  ateliers$: Observable<Atelier[]>;
+  labelFunction: (Atelier) => string;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-    this.ateliers = this.navParams.get("ateliers");
+  constructor(public navCtrl: NavController, public navParams: NavParams, public dataService: DataService) {
+    let ateliers$ = this.navParams.get("ateliers");
+    if (ateliers$) {
+      ateliers$ = Observable.of(ateliers$);
+    }
+    this.ateliers$ = ateliers$ || this.dataService.getAteliers();
+    this.labelFunction = this.navParams.get("labelFunction")
+      || function (atelier: Atelier) {
+        return atelier.parole.titre
+      };
   }
 
   atelierSelected(atelier: Atelier) {

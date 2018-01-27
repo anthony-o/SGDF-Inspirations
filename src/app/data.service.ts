@@ -48,6 +48,8 @@ export class DataService {
       if (!this.initialized && !this.initializing) {
         this.initializing = true;
 
+        //this.http.get('https://docs.google.com/spreadsheets/d/1RDbRvIgSeY9R7Os9aaa6_-teDtIjXmaHsYE9w81RSnU/gviz/tq?tqx=out:csv', {responseType: 'text'})
+        // thanks to https://stackoverflow.com/a/33727897/535203 for CSV export URL link
         this.http.get('/assets/data.csv', {responseType: 'text'})
           .catch(error => {
             let errorMessage = "Erreur lors de l'obtention des données : "+error.message;
@@ -120,4 +122,7 @@ export class DataService {
     return this.init().map(dataService => Array.from(dataService.themes.values()));
   }
 
+  getAteliers(): Observable<Atelier[]> {
+    return this.init().map(dataService => dataService.ateliers);
+  }
 }

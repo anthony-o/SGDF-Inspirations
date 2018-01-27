@@ -1,13 +1,10 @@
-<!--
-  Generated template for the AtelierListPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
   <ion-navbar>
-    <ion-title>atelierList</ion-title>
+    <button ion-button menuToggle>
+      <ion-icon name='menu'></ion-icon>
+    </button>
+    <ion-title>Ateliers</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -15,8 +12,8 @@
 
 <ion-content padding>
   <ion-list>
-    <button ion-item *ngFor="let atelier of ateliers" (click)="atelierSelected(atelier)">
-      {{atelier.parole.titre}}
+    <button ion-item *ngFor="let atelier of ateliers$ | async" (click)="atelierSelected(atelier)">
+      {{labelFunction(atelier)}}
     </button>
   </ion-list>
 </ion-content>
