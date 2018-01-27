@@ -11,6 +11,7 @@ import {Observable} from "rxjs/Observable";
 import {Observer} from "rxjs/Observer";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/catch";
+import marked from "marked";
 
 @Injectable()
 export class DataService {
@@ -65,11 +66,11 @@ export class DataService {
 
             for (let line of data) {
               if (line && line.Theme) {
-                let themeStr = line.Theme;
+                let themeStr = marked(line.Theme);
                 let theme: Theme = this.themes.get(themeStr) || new Theme(themeStr);
                 this.themes.set(themeStr, theme);
 
-                let sousThemeStr = line.SousTheme;
+                let sousThemeStr = marked(line.SousTheme);
                 let sousTheme: SousTheme = this.sousThemes.get(sousThemeStr) || new SousTheme(sousThemeStr);
                 this.sousThemes.set(sousThemeStr, sousTheme);
 
@@ -79,17 +80,17 @@ export class DataService {
 
                 let atelier: Atelier = {
                   sousTheme: sousTheme,
-                  accueil: line.Accueil,
+                  accueil: marked(line.Accueil),
                   parole: {
                     titre: line['Parole.Titre'],
-                    texte: line['Parole.Texte'],
+                    texte: marked(line['Parole.Texte']),
                     reference: line['Parole.Reference']
                   },
                   geste: new Geste(
                     line['Geste.Titre'],
-                    line['Geste.Texte'],
+                    marked(line['Geste.Texte']),
                   ),
-                  envoi: line.Envoi,
+                  envoi: marked(line.Envoi),
                   trancheAges: line['TrancheAge[]'].split(',')
                     .map(label => {
                       let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);

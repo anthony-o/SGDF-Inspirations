@@ -16,7 +16,7 @@
 <ion-content padding>
   <ion-list>
     <button ion-item *ngFor="let sousTheme of sousThemes" (click)="sousThemeSelected(sousTheme)">
-      {{sousTheme.label}}
+      <ion-label [innerHTML]="sousTheme.label"></ion-label>
     </button>
   </ion-list>
 </ion-content>

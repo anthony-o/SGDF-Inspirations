@@ -14,12 +14,12 @@
 
 <ion-content padding>
   <h1>Accueil</h1>
-  <p>{{atelier.accueil}}</p>
+  <div [innerHTML]="atelier.accueil"></div>
   <h1>Parole : <i>{{atelier.parole.titre}}</i></h1>
-  <p>{{atelier.parole.texte}}</p>
+  <div [innerHTML]="atelier.parole.texte"></div>
   <i>{{atelier.parole.reference}}</i>
   <h1>Geste : <i>{{atelier.geste.titre}}</i></h1>
-  <p>{{atelier.geste.texte}}</p>
+  <div [innerHTML]="atelier.geste.texte"></div>
   <h1>Envoi</h1>
-  <p>{{atelier.envoi}}</p>
+  <div [innerHTML]="atelier.envoi"></div>
 </ion-content>
