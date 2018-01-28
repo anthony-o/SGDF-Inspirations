@@ -1,14 +1,22 @@
 <ion-menu [content]="content">
   <ion-header>
     <ion-toolbar>
-      <ion-title>Rechercher par...</ion-title>
+      <ion-title>Menu</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <ion-content>
     <ion-list>
+      <ion-list-header>Rechercher par...</ion-list-header>
       <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">
         {{p.title}}
+      </button>
+    </ion-list>
+    <ion-list>
+      <ion-list-header>Paramètres</ion-list-header>
+      <button ion-item>
+        <ion-label>Données en ligne</ion-label>
+        <ion-toggle [(ngModel)]="onlineData" (ionChange)="updateOnlineData()"></ion-toggle>
       </button>
     </ion-list>
   </ion-content>

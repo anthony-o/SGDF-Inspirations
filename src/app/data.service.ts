@@ -27,32 +27,35 @@ export class DataService {
 
   private initialized: boolean = false;
   private initializing: boolean = false;
+  private onlineData: boolean = false;
+
+  private observable: Observable<DataService>;
+  private observer: Observer<DataService>;
 
   constructor(private http: HttpClient, private alertCtrl: AlertController) {
   }
 
-  timeoutInit(observer: Observer<DataService>): void {
-    // timeout thanks to https://stackoverflow.com/a/44334611/535203
-    setTimeout(() => {
-      if (!this.initialized) {
-        this.timeoutInit(observer);
-      } else {
-        observer.next(this);
-        observer.complete();
-      }
-    }, 200);
+  init() {
+    this.themes = new Map();
+    this.sousThemes = new Map();
+    this.trancheAges = new Map();
+    this.ateliers = [];
+
+    this.initialized = false;
+    this.initializing = false;
   }
 
-  init(): Observable<DataService> {
-    return Observable.create(observer => {
-      if (!this.initialized && !this.initializing) {
+  sendDataServiceToObserver(): any {
+    if (!this.initializing) {
+      if (this.initialized) {
+        this.observer.next(this);
+      } else {
         this.initializing = true;
 
-        //this.http.get('https://docs.google.com/spreadsheets/d/1RDbRvIgSeY9R7Os9aaa6_-teDtIjXmaHsYE9w81RSnU/gviz/tq?tqx=out:csv', {responseType: 'text'})
-        // thanks to https://stackoverflow.com/a/33727897/535203 for CSV export URL link
-        this.http.get('/assets/data.csv', {responseType: 'text'})
+        let url = this.onlineData ? 'https://docs.google.com/spreadsheets/d/1RDbRvIgSeY9R7Os9aaa6_-teDtIjXmaHsYE9w81RSnU/export?format=csv' : '/assets/data.csv';
+        this.http.get(url, {responseType: 'text'})
           .catch(error => {
-            let errorMessage = "Erreur lors de l'obtention des données : "+error.message;
+            let errorMessage = "Erreur lors de l'obtention des données : " + error.message;
             this.alertCtrl.create({
               title: "Erreur lors de l'obtention des données",
               subTitle: errorMessage,
@@ -109,20 +112,48 @@ export class DataService {
             this.initialized = true;
             this.initializing = false;
 
-            observer.next(this);
-            observer.complete();
+            this.observer.next(this);
+            //observer.complete();
           });
-      } else {
-        this.timeoutInit(observer);
       }
-    });
+    }
+  }
+
+  getObservableInstance(): Observable<DataService> {
+    if (!this.observable) {
+      this.observable = Observable.create(observer => {
+        this.observer = observer;
+
+        this.sendDataServiceToObserver();
+      });
+      return this.observable;
+    } else {
+      return Observable.create(observer => {
+        this.observable.subscribe(dataService => {
+          observer.next(dataService);
+        });
+        this.sendDataServiceToObserver();
+      });
+    }
   }
 
   getThemes(): Observable<Theme[]> {
-    return this.init().map(dataService => Array.from(dataService.themes.values()));
+    return this.getObservableInstance().map(dataService => Array.from(dataService.themes.values()));
   }
 
   getAteliers(): Observable<Atelier[]> {
-    return this.init().map(dataService => dataService.ateliers);
+    return this.getObservableInstance().map(dataService => dataService.ateliers);
+  }
+
+  getOnlineData(): boolean {
+    return this.onlineData;
+  }
+
+  setOnlineData(onlineData: boolean) {
+    if (this.onlineData != onlineData) {
+      this.init();
+      this.onlineData = onlineData;
+      this.sendDataServiceToObserver();
+    }
   }
 }

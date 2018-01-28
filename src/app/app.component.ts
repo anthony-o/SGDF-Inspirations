@@ -7,6 +7,7 @@ import {TabsPage} from '../pages/tabs/tabs';
 import {ThemeListPage} from "../pages/theme-list/theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {Atelier} from "./atelier";
+import {DataService} from "./data.service";
 
 @Component({
   templateUrl: 'app.html'
@@ -18,7 +19,9 @@ export class MyApp {
 
   pages: Array<{ title: string, component: any, params?: any }>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen) {
+  onlineData: boolean;
+
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public dataService: DataService) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -34,6 +37,7 @@ export class MyApp {
       },
     ];
 
+    this.onlineData = this.dataService.getOnlineData();
   }
 
   initializeApp() {
@@ -49,5 +53,9 @@ export class MyApp {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component, page.params);
+  }
+
+  updateOnlineData() {
+    this.dataService.setOnlineData(this.onlineData);
   }
 }
