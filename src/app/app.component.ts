@@ -4,7 +4,6 @@ import {StatusBar} from '@ionic-native/status-bar';
 import {SplashScreen} from '@ionic-native/splash-screen';
 import {ThemeListPage} from "../pages/theme-list/theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
-import {Atelier} from "./atelier";
 import {DataService} from "./data.service";
 
 @Component({
@@ -24,15 +23,8 @@ export class MyApp {
 
     // used for an example of ngFor and navigation
     this.pages = [
-      {title: 'Thème', component: ThemeListPage},
-      {title: 'Parole', component: AtelierListPage},
-      {
-        title: 'Geste', component: AtelierListPage, params: {
-          labelFunction: function (atelier: Atelier) {
-            return atelier.geste.titre
-          }
-        }
-      },
+      {title: 'Ateliers par thèmes', component: ThemeListPage},
+      {title: 'Ateliers', component: AtelierListPage},
     ];
 
     this.onlineData = this.dataService.getOnlineData();

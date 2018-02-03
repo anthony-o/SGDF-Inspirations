@@ -1,5 +1,4 @@
 import {Injectable} from "@angular/core";
-import * as Papa from 'papaparse';
 import {Theme} from "./theme";
 import {SousTheme} from "./sousTheme";
 import {TrancheAge} from "./trancheAge";
@@ -15,24 +14,34 @@ import marked from "marked";
 
 @Injectable()
 export class DataService {
-  data: string = '"Theme","SousTheme","Accueil","Parole.Titre","Parole.Texte","Parole.Reference","Geste.Titre","Geste.Texte","Envoi","TrancheAge[]"\n' +
-    '"1er thème","1er sous-thème","Accueil 1","Parole 1","Parole 1 détails","Parole 1 référence","Geste 1","Geste 1 détails","Envoi 1","8-11,12-14"\n' +
-    '"1er thème","1er sous-thème","Accueil 2","Parole 2","Parole 2 détails","Parole 2 référence","Geste 2","Geste 2 détails","Envoi 2","8-11,15-17"\n' +
-    '"1er thème","2ème sous-thème","Accueil 3","Parole 3","Parole 3 détails","Parole 3 référence","Geste 3","Geste 3 détails","Envoi 3","15-17"';
+  themes: Map<string, Theme>;
+  sousThemes: Map<string, SousTheme>;
+  trancheAges: Map<string, TrancheAge>;
+  ateliers: Atelier[];
 
-  themes: Map<string, Theme> = new Map();
-  sousThemes: Map<string, SousTheme> = new Map();
-  trancheAges: Map<string, TrancheAge> = new Map();
-  ateliers: Atelier[] = [];
-
-  private initialized: boolean = false;
-  private initializing: boolean = false;
   private onlineData: boolean = false;
 
-  private observable: Observable<DataService>;
-  private observer: Observer<DataService>;
+  private themesObservable: Observable<Theme[]>;
+  private themesObserver: Observer<Theme[]>;
+
+  private ateliersObservable: Observable<Atelier[]>;
+  private ateliersObserver: Observer<Atelier[]>;
 
   constructor(private http: HttpClient, private alertCtrl: AlertController) {
+
+    this.themesObservable = Observable.create(observer => {
+      this.themesObserver = observer;
+    });
+    this.themesObservable.subscribe(themes => {console.log(themes)});
+
+    this.ateliersObservable = Observable.create(observer => {
+      this.ateliersObserver = observer;
+    });
+    this.ateliersObservable.subscribe(ateliers => {console.log(ateliers)});
+
+    setTimeout(() => {
+      this.init(); // initialisation dans un timeout sinon les variables observer n'ont pas encore été initialisées
+    }, 20);
   }
 
   init() {
@@ -41,108 +50,94 @@ export class DataService {
     this.trancheAges = new Map();
     this.ateliers = [];
 
-    this.initialized = false;
-    this.initializing = false;
-  }
-
-  sendDataServiceToObserver(): any {
-    if (!this.initializing) {
-      if (this.initialized) {
-        this.observer.next(this);
-      } else {
-        this.initializing = true;
-
-        let url = this.onlineData ? 'https://docs.google.com/spreadsheets/d/1RDbRvIgSeY9R7Os9aaa6_-teDtIjXmaHsYE9w81RSnU/export?format=csv' : '/assets/data.csv';
-        this.http.get(url, {responseType: 'text'})
-          .catch(error => {
-            let errorMessage = "Erreur lors de l'obtention des données : " + error.message;
-            this.alertCtrl.create({
-              title: "Erreur lors de l'obtention des données",
-              subTitle: errorMessage,
-              buttons: ['Ignorer']
-            });
-            console.error(errorMessage);
-            return [];
-          })
-          .subscribe(dataCsv => {
-            // inspiré par https://devdactic.com/csv-data-ionic/
-            // Documentation pour Papa.parse : http://papaparse.com/docs#strings
-            let data: { [key: string]: string }[] = Papa.parse(dataCsv, {header: true}).data;
-
-            for (let line of data) {
-              if (line && line.Theme) {
-                let themeStr = marked(line.Theme);
-                let theme: Theme = this.themes.get(themeStr) || new Theme(themeStr);
-                this.themes.set(themeStr, theme);
-
-                let sousThemeStr = marked(line.SousTheme);
-                let sousTheme: SousTheme = this.sousThemes.get(sousThemeStr) || new SousTheme(sousThemeStr);
-                this.sousThemes.set(sousThemeStr, sousTheme);
-
-                if (!theme.sousThemes.includes(sousTheme)) {
-                  theme.sousThemes.push(sousTheme);
+    this.http.get('/assets/ateliers/index.txt', {responseType: 'text'})
+      .subscribe(index => {
+        for (let atelierUrl of index.split(/\r?\n/)) {
+          if (atelierUrl) {
+            this.http.get(atelierUrl, {responseType: 'text'})
+              .catch(error => { //TODO à tester, pas sûr que ce bloc affiche correctement le message d'erreur à l'utilisateur
+                let errorMessage = "Erreur lors de l'obtention des données : " + error.message;
+                this.alertCtrl.create({
+                  title: "Erreur lors de l'obtention des données",
+                  subTitle: errorMessage,
+                  buttons: ['Ignorer']
+                });
+                console.error(errorMessage);
+                return [];
+              })
+              .subscribe(atelierMd => {
+                // Découpage du fichier source d'atelier en parties
+                let atelierParts:any = {};
+                for (let part of atelierMd.split(/^# -->/m)) {
+                  if (part) {
+                    let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
+                    atelierParts[partElements[1]
+                      .toLowerCase() // en minuscule
+                      .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
+                      .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
+                      ] = partElements[2].trim();
+                  }
+                }
+                // Création de l'objet Atelier avec ces parties
+                let themeStr = atelierParts.theme;
+                let theme: Theme = this.themes.get(themeStr);
+                if (!theme) {
+                  theme = new Theme(themeStr);
+                  this.themes.set(themeStr, theme);
+                  this.themesObserver.next(this.getThemesValues()); // Rafraîchissement des thèmes
                 }
 
                 let atelier: Atelier = {
-                  sousTheme: sousTheme,
-                  accueil: marked(line.Accueil),
+                  sousTheme: atelierParts.soustheme,
+                  accueil: marked(atelierParts.accueil),
                   parole: {
-                    titre: line['Parole.Titre'],
-                    texte: marked(line['Parole.Texte']),
-                    reference: line['Parole.Reference']
+                    titre: atelierParts.paroletitre,
+                    texte: marked(atelierParts.paroletexte),
+                    reference: atelierParts.parolereference
                   },
                   geste: new Geste(
-                    line['Geste.Titre'],
-                    marked(line['Geste.Texte']),
+                    atelierParts.gestetitre,
+                    marked(atelierParts.gestetexte),
                   ),
-                  envoi: marked(line.Envoi),
-                  trancheAges: line['TrancheAge[]'].split(',')
+                  envoi: marked(atelierParts.envoi),
+                  trancheAges: atelierParts.tranchesdages.split(',')
                     .map(label => {
                       let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
                       this.trancheAges.set(label, trancheAge);
                       return trancheAge;
                     })
                 };
-                sousTheme.ateliers.push(atelier);
 
                 this.ateliers.push(atelier);
-              }
-            }
+                theme.ateliers.push(atelier);
 
-            this.initialized = true;
-            this.initializing = false;
-
-            this.observer.next(this);
-            //observer.complete();
-          });
-      }
-    }
+                this.ateliersObserver.next(this.ateliers); // Rafraîchissement des ateliers
+              });
+          }
+        }
+      });
   }
 
-  getObservableInstance(): Observable<DataService> {
-    if (!this.observable) {
-      this.observable = Observable.create(observer => {
-        this.observer = observer;
-
-        this.sendDataServiceToObserver();
-      });
-      return this.observable;
-    } else {
-      return Observable.create(observer => {
-        this.observable.subscribe(dataService => {
-          observer.next(dataService);
-        });
-        this.sendDataServiceToObserver();
-      });
-    }
+  private getThemesValues(): Theme[] {
+    return Array.from(this.themes.values())
   }
 
   getThemes(): Observable<Theme[]> {
-    return this.getObservableInstance().map(dataService => Array.from(dataService.themes.values()));
+    // On renvoit les données au cas où elles ont déjà été envoyées. Timeout grâce à https://stackoverflow.com/a/44334611/535203
+    setTimeout(() => {
+      this.themesObserver.next(this.getThemesValues());
+    }, 20);
+
+    return this.themesObservable;
   }
 
   getAteliers(): Observable<Atelier[]> {
-    return this.getObservableInstance().map(dataService => dataService.ateliers);
+    // On renvoit les données au cas où elles ont déjà été envoyées. Timeout grâce à https://stackoverflow.com/a/44334611/535203
+    setTimeout(() => {
+      this.ateliersObserver.next(this.ateliers);
+    }, 20);
+
+    return this.ateliersObservable;
   }
 
   getOnlineData(): boolean {
@@ -151,9 +146,8 @@ export class DataService {
 
   setOnlineData(onlineData: boolean) {
     if (this.onlineData != onlineData) {
-      this.init();
       this.onlineData = onlineData;
-      this.sendDataServiceToObserver();
+      this.init();
     }
   }
 }

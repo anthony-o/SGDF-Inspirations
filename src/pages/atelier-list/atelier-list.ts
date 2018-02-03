@@ -12,7 +12,6 @@ import "rxjs/add/observable/of";
 })
 export class AtelierListPage {
   ateliers$: Observable<Atelier[]>;
-  labelFunction: (Atelier) => string;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public dataService: DataService) {
     let ateliers$ = this.navParams.get("ateliers");
@@ -20,10 +19,6 @@ export class AtelierListPage {
       ateliers$ = Observable.of(ateliers$);
     }
     this.ateliers$ = ateliers$ || this.dataService.getAteliers();
-    this.labelFunction = this.navParams.get("labelFunction")
-      || function (atelier: Atelier) {
-        return atelier.parole.titre
-      };
   }
 
   atelierSelected(atelier: Atelier) {

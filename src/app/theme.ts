@@ -1,8 +1,8 @@
-import {SousTheme} from "./sousTheme";
+import {Atelier} from "./atelier";
 
 export class Theme {
   constructor(
     public label: string,
-    public sousThemes: SousTheme[] = []
+    public ateliers: Atelier[] = []
   ) {}
 }
