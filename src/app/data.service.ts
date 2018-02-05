@@ -12,6 +12,7 @@ import "rxjs/add/operator/map";
 import "rxjs/add/operator/catch";
 import marked from "marked";
 import * as JSZip from "jszip";
+import * as mammoth from "mammoth";
 
 @Injectable()
 export class DataService {
@@ -61,22 +62,55 @@ export class DataService {
     this.trancheAges = new Map();
     this.ateliers = [];
 
-    this.http.get('/assets/data.zip', {responseType: 'arraybuffer'})
-      .subscribe(dataZip => {
-        new JSZip().loadAsync(dataZip).then(jsZip => {
-          jsZip.folder("ateliers").forEach((relativePath, file) => {
-            file.async('text').then(atelierMd => {
-              this.parseAtelierMd(atelierMd);
-            }, this.handleError);
-          });
-        }, this.handleError);
+    if (this.onlineData) {
+      // C'est en ligne, on va récupérer le contenu du Goole Doc suivant dont le contenu est le fichier zip encodé en base64
+      this.http.get('https://docs.google.com/document/d/1rtncxTc2mvGYXI6H9kGmQsJwW7IaTuFcqcvL9tM2e-4/export?format=txt', {responseType: 'text'}).subscribe(base64EncodedDataZip => {
+        // Puis on traite le fichier normalement
+        this.handleDataZip(base64EncodedDataZip, {base64: true});
       });
+    } else {
+      this.http.get('/assets/data.zip', {responseType: 'arraybuffer'}).subscribe(dataZip => {
+        this.handleDataZip(dataZip, {});
+      });
+    }
+  }
+
+  private handleDataZip(dataZip: any, options: any) {
+    // let jsZip = new JSZip(dataZip, options);
+    JSZip.loadAsync(dataZip, options).then(jsZip => {
+      jsZip.folder("ateliers").forEach((relativePath, file) => {
+        if (relativePath.endsWith(".docx")) {
+          // Traitement des fichiers Word
+          // let arrayBuffer = file.asBinary();
+          file.async('arraybuffer').then(arrayBuffer => {
+            if (relativePath.endsWith(".md.docx")) {
+              // Un document Word dont le texte est formaté en Markdown
+              mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(result => {
+                console.log(result.messages);
+                this.parseAtelierMd(result.value);
+              }, this.handleError);
+            } else {
+              // Un document Word dont il faut convertir le contenu en Markdown
+              mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(result => {
+                console.log(result.messages);
+                this.parseAtelierMd(result.value);
+              }, this.handleError);
+            }
+          }, this.handleError);
+        } else {
+          // Il s'agit d'un fichier que l'on va interpréter comme un contenu texte simple
+          file.async('text').then(atelierMd => {
+            this.parseAtelierMd(atelierMd);
+          }, this.handleError);
+        }
+      });
+    }, this.handleError);
   }
 
   private parseAtelierMd(atelierMd): void {
     // Découpage du fichier source d'atelier en parties
     let atelierParts: any = {};
-    for (let part of atelierMd.split(/^# -->/m)) {
+    for (let part of atelierMd.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // mammoth quand il converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
       if (part) {
         let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
         atelierParts[partElements[1]
