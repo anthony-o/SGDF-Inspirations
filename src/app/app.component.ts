@@ -5,6 +5,7 @@ import {SplashScreen} from '@ionic-native/splash-screen';
 import {ThemeListPage} from "../pages/theme-list/theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {DataService} from "./data.service";
+import {DocumentListPage} from "../pages/document-list/document-list";
 
 @Component({
   templateUrl: 'app.html'
@@ -23,8 +24,39 @@ export class MyApp {
 
     // used for an example of ngFor and navigation
     this.pages = [
-      {title: 'Ateliers par thèmes', component: ThemeListPage},
       {title: 'Ateliers', component: AtelierListPage},
+      {title: 'Ateliers par thèmes', component: ThemeListPage},
+      {
+        title: 'Temps spis', component: DocumentListPage, params: {
+          documentsType: 'Temps spis',
+          documentType: 'Temps spi',
+          dataServiceGetterName: 'getTempsSpis'
+        }
+      },
+      {
+        title: 'Chants',
+        component: DocumentListPage,
+        params: {documentsType: 'Chants', documentType: 'Chant', dataServiceGetterName: 'getChants'}
+      },
+      {
+        title: 'Gestes',
+        component: DocumentListPage,
+        params: {documentsType: 'Gestes', documentType: 'Geste', dataServiceGetterName: 'getGestes'}
+      },
+      {
+        title: 'Textes',
+        component: DocumentListPage,
+        params: {documentsType: 'Textes', documentType: 'Texte', dataServiceGetterName: 'getTextes'}
+      },
+      {
+        title: 'Types de temps spis',
+        component: DocumentListPage,
+        params: {
+          documentsType: 'Types de temps spis',
+          documentType: 'Type de temps spi',
+          dataServiceGetterName: 'getTypesTempsSpis'
+        }
+      },
     ];
 
     this.onlineData = this.dataService.getOnlineData();

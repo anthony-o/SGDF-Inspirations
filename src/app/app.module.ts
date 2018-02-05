@@ -12,10 +12,11 @@ import {StatusBar} from '@ionic-native/status-bar';
 import {SplashScreen} from '@ionic-native/splash-screen';
 import {DataService} from "./data.service";
 import {ThemeListPage} from "../pages/theme-list/theme-list";
-import {SousThemeListPage} from "../pages/sous-theme-list/sous-theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {AtelierPage} from "../pages/atelier/atelier";
 import {HttpClientModule} from "@angular/common/http";
+import {DocumentListPage} from "../pages/document-list/document-list";
+import {DocumentPage} from "../pages/document/document";
 
 @NgModule({
   declarations: [
@@ -25,9 +26,10 @@ import {HttpClientModule} from "@angular/common/http";
     HomePage,
     TabsPage,
     ThemeListPage,
-    SousThemeListPage,
     AtelierListPage,
-    AtelierPage
+    AtelierPage,
+    DocumentListPage,
+    DocumentPage
   ],
   imports: [
     BrowserModule,
@@ -42,9 +44,10 @@ import {HttpClientModule} from "@angular/common/http";
     HomePage,
     TabsPage,
     ThemeListPage,
-    SousThemeListPage,
     AtelierListPage,
-    AtelierPage
+    AtelierPage,
+    DocumentListPage,
+    DocumentPage
   ],
   providers: [
     StatusBar,

@@ -1,11 +1,11 @@
 import {Parole} from "./parole";
-import {Geste} from "./geste";
 import {TrancheAge} from "./trancheAge";
+import {Document} from "./document";
 
 export class Atelier {
   accueil: string;
   parole: Parole;
-  geste: Geste;
+  geste: Document;
   envoi: string;
   trancheAges: TrancheAge[];
   sousTheme: string;

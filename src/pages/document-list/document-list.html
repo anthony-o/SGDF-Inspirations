@@ -1,0 +1,19 @@
+<ion-header>
+
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name='menu'></ion-icon>
+    </button>
+    <ion-title>{{documentsType}}</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-list>
+    <button ion-item *ngFor="let document of documents$ | async" (click)="documentSelected(document)">
+      {{document.titre}}
+    </button>
+  </ion-list>
+</ion-content>

@@ -1,7 +1,6 @@
-export class Geste {
+export class Document {
   constructor(
     public titre: string,
     public texte: string,
-    public autonome: boolean = false
   ) {}
 }

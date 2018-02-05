@@ -1,0 +1,13 @@
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>{{documentType}}</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <h1>{{document.titre}}</h1>
+  <div [innerHTML]="document.texte"></div>
+</ion-content>
