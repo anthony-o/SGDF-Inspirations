@@ -4,6 +4,7 @@ import {Theme} from "../../app/theme";
 import {DataService} from "../../app/data.service";
 import {Observable} from "rxjs/Observable";
 import {AtelierListPage} from "../atelier-list/atelier-list";
+import {OpenHomePage} from "../open-home";
 
 /**
  * Generated class for the ThemeListPage page.
@@ -16,12 +17,11 @@ import {AtelierListPage} from "../atelier-list/atelier-list";
   selector: 'page-theme-list',
   templateUrl: 'theme-list.html',
 })
-export class ThemeListPage {
+export class ThemeListPage extends OpenHomePage {
   themes$: Observable<Theme[]>;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, private dataService: DataService) {
-    // this.dataService.getThemes().subscribe(themes => {console.log('nouveaux themes');console.log(themes)});
-    // this.themes$ = Observable.of([]);
+    super(navCtrl);
     this.themes$ = this.dataService.getThemes();
   }
 

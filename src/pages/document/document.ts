@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import {Document} from "../../app/document";
+import {OpenHomePage} from "../open-home";
 
 /**
  * Generated class for the DocumentPage page.
@@ -13,11 +14,12 @@ import {Document} from "../../app/document";
   selector: 'page-document',
   templateUrl: 'document.html',
 })
-export class DocumentPage {
+export class DocumentPage extends OpenHomePage {
   documentType: string;
   document: Document;
 
   constructor(public navCtrl: NavController, public navParams: NavParams) {
+    super(navCtrl);
     this.documentType = this.navParams.get("documentType");
     this.document = this.navParams.get("document");
   }

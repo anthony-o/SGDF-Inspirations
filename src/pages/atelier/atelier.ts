@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import {Atelier} from "../../app/atelier";
+import {OpenHomePage} from "../open-home";
 
 /**
  * Generated class for the AtelierPage page.
@@ -13,10 +14,11 @@ import {Atelier} from "../../app/atelier";
   selector: 'page-atelier',
   templateUrl: 'atelier.html',
 })
-export class AtelierPage {
+export class AtelierPage extends OpenHomePage {
   atelier: Atelier;
 
   constructor(public navCtrl: NavController, public navParams: NavParams) {
+    super(navCtrl);
     this.atelier = this.navParams.get("atelier");
   }
 

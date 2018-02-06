@@ -6,6 +6,7 @@ import {ThemeListPage} from "../pages/theme-list/theme-list";
 import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {DataService} from "./data.service";
 import {DocumentListPage} from "../pages/document-list/document-list";
+import {HomePage} from "../pages/home/home";
 
 @Component({
   templateUrl: 'app.html'
@@ -13,7 +14,7 @@ import {DocumentListPage} from "../pages/document-list/document-list";
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = ThemeListPage;
+  rootPage: any = HomePage;
 
   pages: Array<{ title: string, component: any, params?: any }>;
 
@@ -75,6 +76,10 @@ export class MyApp {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
     this.nav.setRoot(page.component, page.params);
+  }
+
+  openHome() {
+    this.nav.setRoot(HomePage);
   }
 
   updateOnlineData() {

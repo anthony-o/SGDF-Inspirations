@@ -4,6 +4,7 @@ import {Observable} from "rxjs/Observable";
 import {DataService} from "../../app/data.service";
 import {Document} from "../../app/document";
 import {DocumentPage} from "../document/document";
+import {OpenHomePage} from "../open-home";
 
 /**
  * Generated class for the DocumentListPage page.
@@ -16,12 +17,13 @@ import {DocumentPage} from "../document/document";
   selector: 'page-document-list',
   templateUrl: 'document-list.html',
 })
-export class DocumentListPage {
+export class DocumentListPage extends OpenHomePage {
   documentsType: string;
   documentType: string;
   documents$: Observable<Document[]>;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public dataService: DataService) {
+    super(navCtrl);
     this.documentType = this.navParams.get("documentType");
     this.documentsType = this.navParams.get("documentsType");
     this.documents$ = this.dataService[this.navParams.get("dataServiceGetterName")]();
