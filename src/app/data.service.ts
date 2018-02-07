@@ -113,38 +113,51 @@ export class DataService {
             // Un document Word dont le texte est formaté en Markdown
             mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(result => {
               console.log(result.messages);
-              fileHandler.bind(this)(this.parseFileToParts(result.value));
+              this.handleFile(result.value, fileHandler);
             }, this.handleError);
           } else {
             // Un document Word dont il faut convertir le contenu en Markdown
             mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(result => {
               console.log(result.messages);
-              fileHandler.bind(this)(this.parseFileToParts(result.value));
+              this.handleFile(result.value, fileHandler);
             }, this.handleError);
           }
         }, this.handleError);
       } else {
         // Il s'agit d'un fichier que l'on va interpréter comme un contenu texte simple
         file.async('text').then(textContent => {
-          fileHandler.bind(this)(this.parseFileToParts(textContent));
+          this.handleFile(textContent, fileHandler);
         }, this.handleError);
       }
     });
   }
 
-  private parseFileToParts(fileString: string): { [key: string]: string } {
-    let fileParts: { [key: string]: string } = {};
-    for (let part of fileString.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // mammoth quand il converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
-      if (part) {
-        let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
-        fileParts[partElements[1]
-          .toLowerCase() // en minuscule
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
-          .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
-          ] = partElements[2].trim();
-      }
+  private handleFile(fileContent: string, fileHandler: (fileParts: { [key: string]: string }) => void) {
+    let parts = this.parseFileToParts(fileContent);
+    if (parts) {
+      fileHandler.bind(this)(parts);
     }
-    return fileParts;
+  }
+
+  private parseFileToParts(fileString: string): { [key: string]: string } {
+    try {
+      let fileParts: { [key: string]: string } = {};
+      for (let part of fileString.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // mammoth quand il converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
+        part = part.trim();
+        if (part) {
+          let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
+          fileParts[partElements[1]
+            .toLowerCase() // en minuscule
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
+            .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
+            ] = partElements[2].trim();
+        }
+      }
+      return fileParts;
+    } catch (error) {
+      console.error("Problème lors du parsing du fichier '"+fileString+"' : "+error.message);
+      return null;
+    }
   }
 
   private parseAtelierMd(fileParts: { [key: string]: string }): void {
@@ -157,31 +170,40 @@ export class DataService {
       this.observers.get("themes").next(this.getThemesValues()); // Rafraîchissement des thèmes
     }
 
-    let atelier: Atelier = {
-      sousTheme: fileParts.soustheme,
-      accueil: marked(fileParts.accueil),
-      parole: {
-        titre: fileParts.paroletitre,
-        texte: marked(fileParts.paroletexte),
-        reference: fileParts.parolereference
-      },
-      geste: new Document(
-        fileParts.gestetitre,
-        marked(fileParts.gestetexte),
-      ),
-      envoi: marked(fileParts.envoi),
-      trancheAges: fileParts.tranchesdages.split(',')
-        .map(label => {
-          let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
-          this.trancheAges.set(label, trancheAge);
-          return trancheAge;
-        })
-    };
+    let atelier: Atelier;
+    try {
+      atelier = {
+        sousTheme: fileParts.soustheme,
+        accueil: marked(fileParts.accueil),
+        parole: {
+          titre: fileParts.paroletitre,
+          texte: marked(fileParts.paroletexte),
+          reference: fileParts.parolereference
+        },
+        geste: new Document(
+          fileParts.gestetitre,
+          marked(fileParts.gestetexte),
+        ),
+        envoi: marked(fileParts.envoi),
+        trancheAges: fileParts.tranchesdages.split(',')
+          .map(label => {
+            let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
+            this.trancheAges.set(label, trancheAge);
+            return trancheAge;
+          })
+      };
+    } catch (error) {
+      console.error("Problème lors de la création d'un atelier : "+error.message);
+      console.log(fileParts);
+      atelier = null;
+    }
 
-    this.ateliers.push(atelier);
-    theme.ateliers.push(atelier);
+    if (atelier) {
+      this.ateliers.push(atelier);
+      theme.ateliers.push(atelier);
 
-    this.observers.get("ateliers").next(this.ateliers); // Rafraîchissement des ateliers
+      this.observers.get("ateliers").next(this.ateliers); // Rafraîchissement des ateliers
+    }
   }
 
   private parseDocumentHandler(folderName: string): (fileParts: { [key: string]: string }) => void {
@@ -189,13 +211,23 @@ export class DataService {
     let documents: Document[] = this[fieldName];
 
     return function (fileParts: { [key: string]: string }): void {
-      let document: Document = {
-        titre: fileParts.titre,
-        texte: marked(fileParts.texte)
-      };
-      documents.push(document);
+      let document: Document;
+      try {
+        document = {
+          titre: fileParts.titre,
+          texte: marked(fileParts.texte)
+        };
+      } catch (error) {
+        console.error("Problème lors de la création d'un document : "+error.message);
+        console.log(fileParts);
+        document = null;
+      }
 
-      this.observers.get(fieldName).next(documents); // Rafraîchissement de la liste de ce type de document
+      if (document) {
+        documents.push(document);
+
+        this.observers.get(fieldName).next(documents); // Rafraîchissement de la liste de ce type de document
+      }
     };
   }
 
