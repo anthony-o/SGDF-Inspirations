@@ -160,6 +160,10 @@ export class DataService {
     }
   }
 
+  private notMarked(contentToUnEscape: string) {
+    return contentToUnEscape && contentToUnEscape.replace(/\\/g, '');
+  }
+
   private parseAtelierMd(fileParts: { [key: string]: string }): void {
     // Création de l'objet Atelier avec ces parties
     let themeStr = fileParts.theme;
@@ -172,25 +176,30 @@ export class DataService {
 
     let atelier: Atelier;
     try {
-      atelier = {
-        sousTheme: fileParts.soustheme,
-        accueil: marked(fileParts.accueil),
-        parole: {
-          titre: fileParts.paroletitre,
-          texte: marked(fileParts.paroletexte),
-          reference: fileParts.parolereference
-        },
-        geste: new Document(
-          fileParts.gestetitre,
-          marked(fileParts.gestetexte),
-        ),
-        envoi: marked(fileParts.envoi),
-        trancheAges: fileParts.tranchesdages.split(',')
+      let tranchesDAagesStr = this.notMarked(fileParts.tranchesdages),
+          tranchesDAages: TrancheAge[];
+      if (tranchesDAagesStr) {
+        tranchesDAages = tranchesDAagesStr.split(',')
           .map(label => {
             let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
             this.trancheAges.set(label, trancheAge);
             return trancheAge;
           })
+      }
+      atelier = {
+        sousTheme: this.notMarked(fileParts.soustheme),
+        accueil: marked(fileParts.accueil),
+        parole: {
+          titre: this.notMarked(fileParts.paroletitre),
+          texte: marked(fileParts.paroletexte),
+          reference: this.notMarked(fileParts.parolereference)
+        },
+        geste: new Document(
+          this.notMarked(fileParts.gestetitre),
+          marked(fileParts.gestetexte),
+        ),
+        envoi: marked(fileParts.envoi),
+        trancheAges: tranchesDAages
       };
     } catch (error) {
       console.error("Problème lors de la création d'un atelier : "+error.message);
@@ -214,7 +223,7 @@ export class DataService {
       let document: Document;
       try {
         document = {
-          titre: fileParts.titre,
+          titre: this.notMarked(fileParts.titre),
           texte: marked(fileParts.texte)
         };
       } catch (error) {
