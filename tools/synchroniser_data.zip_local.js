@@ -58,7 +58,9 @@ request('https://docs.google.com/document/d/1rtncxTc2mvGYXI6H9kGmQsJwW7IaTuFcqcv
       }
 
       function handleFile(folderPathFromRoot, relativePath, mdContent) {
-        dataZip.file(folderPathFromRoot + '/' + relativePath, mdContent);
+        if (!relativePath.endsWith(".pdf")) {
+          dataZip.file(folderPathFromRoot + '/' + relativePath, mdContent);
+        }
         handledFiles++;
         if (filesToHandle.length == handledFiles) {
           afterReadingAllFiles();
