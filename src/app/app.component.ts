@@ -16,7 +16,7 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  pages: Array<{ title: string, component: any, params?: any }>;
+  menus: Array<{ title: string, pages: [{ title: string, component?: any, params?: any }] }>;
 
   onlineData: boolean;
 
@@ -24,40 +24,50 @@ export class MyApp {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
-    this.pages = [
-      {title: 'Ateliers', component: AtelierListPage},
-      {title: 'Ateliers par thèmes', component: ThemeListPage},
+    this.menus = [
       {
-        title: 'Temps spis', component: DocumentListPage, params: {
-          documentsType: 'Temps spis',
-          documentType: 'Temps spi',
-          dataServiceGetterName: 'getTempsSpis'
-        }
+        title: 'Préparer un temps spirituel', pages: [
+          {title: 'Méthode'},
+          {title: 'Temps spirituels en kit par thèmes', component: ThemeListPage},
+          {title: 'Temps spirituels en kit', component: AtelierListPage},
+        ]
       },
       {
-        title: 'Chants',
-        component: DocumentListPage,
-        params: {documentsType: 'Chants', documentType: 'Chant', dataServiceGetterName: 'getChants'}
+        title: 'Outils', pages: [
+          {
+            title: 'Types de temps spis',
+            component: DocumentListPage,
+            params: {
+              documentsType: 'Types de temps spis',
+              documentType: 'Type de temps spi',
+              dataServiceGetterName: 'getTypesTempsSpis'
+            }
+          },
+          {
+            title: 'Textes',
+            component: DocumentListPage,
+            params: {documentsType: 'Textes', documentType: 'Texte', dataServiceGetterName: 'getTextes'}
+          },
+          {
+            title: 'Chants',
+            component: DocumentListPage,
+            params: {documentsType: 'Chants', documentType: 'Chant', dataServiceGetterName: 'getChants'}
+          },
+          {
+            title: 'Gestes',
+            component: DocumentListPage,
+            params: {documentsType: 'Gestes', documentType: 'Geste', dataServiceGetterName: 'getGestes'}
+          },
+          {
+            title: 'Bénédicités',
+          },
+        ]
       },
       {
-        title: 'Gestes',
-        component: DocumentListPage,
-        params: {documentsType: 'Gestes', documentType: 'Geste', dataServiceGetterName: 'getGestes'}
-      },
-      {
-        title: 'Textes',
-        component: DocumentListPage,
-        params: {documentsType: 'Textes', documentType: 'Texte', dataServiceGetterName: 'getTextes'}
-      },
-      {
-        title: 'Types de temps spis',
-        component: DocumentListPage,
-        params: {
-          documentsType: 'Types de temps spis',
-          documentType: 'Type de temps spi',
-          dataServiceGetterName: 'getTypesTempsSpis'
-        }
-      },
+        title: 'Autres', pages: [
+          {title: 'Contact'}
+        ]
+      }
     ];
 
     this.onlineData = this.dataService.getOnlineData();

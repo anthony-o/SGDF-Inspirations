@@ -18,7 +18,7 @@
 <ion-content padding>
   <ion-list>
     <button ion-item *ngFor="let atelier of ateliers$ | async" (click)="atelierSelected(atelier)">
-      <h2>{{atelier.sousTheme}}</h2>
+      <h2><span class="emphase">{{atelier.sousTheme}}</span> <i>({{atelier.theme.label}})</i></h2>
       <h3>{{atelier.parole.titre}}</h3>
       <p>{{atelier.parole.reference}}</p>
     </button>

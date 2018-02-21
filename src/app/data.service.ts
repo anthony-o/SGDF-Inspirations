@@ -199,7 +199,8 @@ export class DataService {
           marked(fileParts.gestetexte),
         ),
         envoi: marked(fileParts.envoi),
-        trancheAges: tranchesDAages
+        trancheAges: tranchesDAages,
+        theme: theme
       };
     } catch (error) {
       console.error("Problème lors de la création d'un atelier : "+error.message);

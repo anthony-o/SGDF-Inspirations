@@ -10,9 +10,11 @@
       <button menuClose ion-item (click)="openHome()">
         <ion-label>Accueil</ion-label>
       </button>
-      <ion-list-header>Afficher...</ion-list-header>
-      <button menuClose ion-item *ngFor="let p of pages" (click)="openPage(p)">
-        {{p.title}}
+    </ion-list>
+    <ion-list *ngFor="let menu of menus">
+      <ion-list-header>{{menu.title}}</ion-list-header>
+      <button menuClose ion-item *ngFor="let page of menu.pages" (click)="openPage(page)">
+        {{page.title}}
       </button>
     </ion-list>
     <ion-list>
