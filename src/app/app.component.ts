@@ -7,6 +7,7 @@ import {AtelierListPage} from "../pages/atelier-list/atelier-list";
 import {DataService} from "./data.service";
 import {DocumentListPage} from "../pages/document-list/document-list";
 import {HomePage} from "../pages/home/home";
+import {TYPES_DOCUMENTS_BY_FOLDER_NAME} from "./typeDocument";
 
 @Component({
   templateUrl: 'app.html'
@@ -16,12 +17,26 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  menus: Array<{ title: string, pages: [{ title: string, component?: any, params?: any }] }>;
+  menus: Array<{ title: string, pages: { title: string, component?: any, params?: any }[] }>;
 
   onlineData: boolean;
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public dataService: DataService) {
     this.initializeApp();
+
+    let outilsPages: { title: string, component?: any, params?: any }[] = [];
+
+    for (let typeDocument of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.values())) {
+      outilsPages.push({
+        title: typeDocument.titrePluriel,
+        component: DocumentListPage,
+        params: {
+          documentsType: typeDocument.titrePluriel,
+          documentType: typeDocument.titreSingulier,
+          folderName: typeDocument.nomDossier
+        }
+      });
+    }
 
     // used for an example of ngFor and navigation
     this.menus = [
@@ -33,35 +48,7 @@ export class MyApp {
         ]
       },
       {
-        title: 'Outils', pages: [
-          {
-            title: 'Types de temps spis',
-            component: DocumentListPage,
-            params: {
-              documentsType: 'Types de temps spis',
-              documentType: 'Type de temps spi',
-              dataServiceGetterName: 'getTypesTempsSpis'
-            }
-          },
-          {
-            title: 'Textes',
-            component: DocumentListPage,
-            params: {documentsType: 'Textes', documentType: 'Texte', dataServiceGetterName: 'getTextes'}
-          },
-          {
-            title: 'Chants',
-            component: DocumentListPage,
-            params: {documentsType: 'Chants', documentType: 'Chant', dataServiceGetterName: 'getChants'}
-          },
-          {
-            title: 'Gestes',
-            component: DocumentListPage,
-            params: {documentsType: 'Gestes', documentType: 'Geste', dataServiceGetterName: 'getGestes'}
-          },
-          {
-            title: 'Bénédicités',
-          },
-        ]
+        title: 'Outils', pages: outilsPages
       },
       {
         title: 'Autres', pages: [

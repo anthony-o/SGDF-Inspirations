@@ -5,56 +5,33 @@ import {Atelier} from "./atelier";
 import {AlertController} from "ionic-angular";
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
-import {Observer} from "rxjs/Observer";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/catch";
 import marked from "marked";
 import * as JSZip from "jszip";
 import * as mammoth from "mammoth";
 import {Document} from "./document";
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
+import {TYPES_DOCUMENTS_BY_FOLDER_NAME} from "./typeDocument";
 
 @Injectable()
 export class DataService {
   themes: Map<string, Theme>;
   trancheAges: Map<string, TrancheAge>;
   ateliers: Atelier[];
-  tempsSpis: Document[];
-  chants: Document[];
-  gestes: Document[];
-  textes: Document[];
-  typesTempsSpis: Document[];
 
-  private static FOLDER_NAME_TO_FIELD_MAPPING: Map<string, string> = new Map<string, string>(Object.entries({  // Object => Map grâce à https://stackoverflow.com/a/36644558/535203
-    tempsSpis: "tempsSpis",
-    chants: "chants",
-    gestes: "gestes",
-    textes: "textes",
-    typesTempsSpis: "typesTempsSpis",
-  }));
+  ateliersBehaviorSubject: BehaviorSubject<Atelier[]>;
+  themesBehaviorSubject: BehaviorSubject<Theme[]>;
 
-  private static FIELD_NAMES_TO_HANDLE: string[] = ['ateliers', 'themes', ...Array.from(DataService.FOLDER_NAME_TO_FIELD_MAPPING.values())];
+  documentsByFolderName: Map<string, Document[]>;
+  documentsBehaviorSubjectByFolderName: Map<string, BehaviorSubject<Document[]>>;
 
-  private static FOLDER_NAMES_TO_HANDLE: string[] = ['ateliers', 'themes', ...Array.from(DataService.FOLDER_NAME_TO_FIELD_MAPPING.keys())];
-
+  private static FOLDER_NAMES_TO_HANDLE: string[] = ['ateliers', ...Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())];
 
   private onlineData: boolean = false;
 
-  private observables: Map<string, Observable<any[]>> = new Map<string, Observable<any[]>>();
-  private observers: Map<string, Observer<any[]>> = new Map<string, Observer<any[]>>();
-
   constructor(private http: HttpClient, private alertCtrl: AlertController) {
-
-    for (let fieldName of DataService.FIELD_NAMES_TO_HANDLE) {
-      let observable = Observable.create(observer => {
-        this.observers.set(fieldName, observer);
-      });
-      this.observables.set(fieldName, observable);
-      observable.subscribe(() => {}); // on souscrit à l'observable pour l'initialiser
-    }
-
-    setTimeout(() => {
-      this.init(); // initialisation dans un timeout sinon les variables observer n'ont pas encore été initialisées
-    }, 20);
+    this.init();
   }
 
   private handleError(error) {
@@ -71,11 +48,18 @@ export class DataService {
     this.themes = new Map();
     this.trancheAges = new Map();
     this.ateliers = [];
-    this.tempsSpis = [];
-    this.chants = [];
-    this.gestes = [];
-    this.textes = [];
-    this.typesTempsSpis = [];
+
+    this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>(this.ateliers);
+    this.themesBehaviorSubject = new BehaviorSubject<Theme[]>([]);
+
+    this.documentsByFolderName = new Map<string, Document[]>();
+    this.documentsBehaviorSubjectByFolderName = new Map<string, BehaviorSubject<Document[]>>();
+
+    for (let typeDocumentFolderName of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())) {
+      let documents = [];
+      this.documentsBehaviorSubjectByFolderName.set(typeDocumentFolderName, new BehaviorSubject<Document[]>(documents));
+      this.documentsByFolderName.set(typeDocumentFolderName, documents);
+    }
 
     if (this.onlineData) {
       // C'est en ligne, on va récupérer le contenu du Goole Doc suivant dont le contenu est le fichier zip encodé en base64
@@ -171,7 +155,7 @@ export class DataService {
     if (!theme) {
       theme = new Theme(themeStr);
       this.themes.set(themeStr, theme);
-      this.observers.get("themes").next(this.getThemesValues()); // Rafraîchissement des thèmes
+      this.themesBehaviorSubject.next(this.getThemesValues()); // Rafraîchissement des thèmes
     }
 
     let atelier: Atelier;
@@ -212,13 +196,12 @@ export class DataService {
       this.ateliers.push(atelier);
       theme.ateliers.push(atelier);
 
-      this.observers.get("ateliers").next(this.ateliers); // Rafraîchissement des ateliers
+      // this.ateliersBehaviorSubject.next(this.ateliers); // Rafraîchissement des ateliers
     }
   }
 
   private parseDocumentHandler(folderName: string): (fileParts: { [key: string]: string }) => void {
-    let fieldName = DataService.FOLDER_NAME_TO_FIELD_MAPPING.get(folderName);
-    let documents: Document[] = this[fieldName];
+    let documents: Document[] = this.documentsByFolderName.get(folderName);
 
     return function (fileParts: { [key: string]: string }): void {
       let document: Document;
@@ -236,7 +219,7 @@ export class DataService {
       if (document) {
         documents.push(document);
 
-        this.observers.get(fieldName).next(documents); // Rafraîchissement de la liste de ce type de document
+        // this.documentsBehaviorSubjectByFolderName.get(folderName).next(documents); // Rafraîchissement de la liste de ce type de document
       }
     };
   }
@@ -245,41 +228,16 @@ export class DataService {
     return Array.from(this.themes.values())
   }
 
-  private getFieldObservable<T>(fieldName: string, getter?: () => T[]): Observable<T[]> {
-    // On renvoit les données au cas où elles ont déjà été envoyées. Timeout grâce à https://stackoverflow.com/a/44334611/535203
-    setTimeout(() => {
-      this.observers.get(fieldName).next(getter ? getter.bind(this)() : this[fieldName]);
-    }, 20);
-
-    return this.observables.get(fieldName);
-  }
-
   getThemes(): Observable<Theme[]> {
-    return this.getFieldObservable("themes", this.getThemesValues);
+    return this.themesBehaviorSubject;
   }
 
   getAteliers(): Observable<Atelier[]> {
-    return this.getFieldObservable("ateliers");
+    return this.ateliersBehaviorSubject;
   }
 
-  getTempsSpis(): Observable<Document[]> {
-    return this.getFieldObservable("tempsSpis");
-  }
-
-  getChants(): Observable<Document[]> {
-    return this.getFieldObservable("chants");
-  }
-
-  getGestes(): Observable<Document[]> {
-    return this.getFieldObservable("gestes");
-  }
-
-  getTextes(): Observable<Document[]> {
-    return this.getFieldObservable("textes");
-  }
-
-  getTypesTempsSpis(): Observable<Document[]> {
-    return this.getFieldObservable("typesTempsSpis");
+  getDocumentsByFolderName(folderName: string): Observable<Document[]> {
+    return this.documentsBehaviorSubjectByFolderName.get(folderName);
   }
 
   getOnlineData(): boolean {
@@ -289,7 +247,9 @@ export class DataService {
   setOnlineData(onlineData: boolean) {
     if (this.onlineData != onlineData) {
       this.onlineData = onlineData;
-      this.init();
+      setTimeout(() => {
+        this.init(); // initialisation dans un timeout pour ne pas figer la vue
+      }, 20);
     }
   }
 }

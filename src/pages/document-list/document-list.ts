@@ -26,7 +26,7 @@ export class DocumentListPage extends OpenHomePage {
     super(navCtrl);
     this.documentType = this.navParams.get("documentType");
     this.documentsType = this.navParams.get("documentsType");
-    this.documents$ = this.dataService[this.navParams.get("dataServiceGetterName")]();
+    this.documents$ = this.dataService.getDocumentsByFolderName(this.navParams.get("folderName"));
   }
 
   documentSelected(document: Document) {
