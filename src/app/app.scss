@@ -25,3 +25,51 @@ ion-label.label p {
 .emphase {
   color: dodgerblue;
 }
+
+// Icones custom grâce à https://stackoverflow.com/a/44575053/535203
+ion-icon {
+  &[class*="logo-"] {
+    // Instead of using the font-based icons
+    // We're applying SVG masks
+    mask-size: contain;
+    mask-position: 50% 50%;
+    mask-repeat: no-repeat;
+    background: currentColor;
+    width: 1em;
+    height: 1em;
+  }
+  // custom icons
+  &[class*="logo-F"] {
+    mask-image: url(../assets/imgs/F.svg);
+  }
+  &[class*="logo-LJ"] {
+    mask-image: url(../assets/imgs/LJ.svg);
+  }
+  &[class*="logo-SG"] {
+    mask-image: url(../assets/imgs/SG.svg);
+  }
+  &[class*="logo-PC"] {
+    mask-image: url(../assets/imgs/PC.svg);
+  }
+  &[class*="logo-C"] {
+    mask-image: url(../assets/imgs/C.svg);
+  }
+  &[class*="logo-R"] {
+    mask-image: url(../assets/imgs/R.svg);
+  }
+  &[class*="logo-M"] {
+    mask-image: url(../assets/imgs/M.svg);
+  }
+  &[class*="logo-VDL"] {
+    mask-image: url(../assets/imgs/VDL.svg);
+  }
+}
+
+div.logo {
+  display: inline;
+
+  img {
+    width: 2em;
+    height: 2em;
+  }
+}

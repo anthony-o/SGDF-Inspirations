@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Theme} from "./theme";
-import {TrancheAge} from "./trancheAge";
+import {TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY} from "./trancheAge";
 import {Atelier} from "./atelier";
 import {AlertController} from "ionic-angular";
 import {HttpClient} from "@angular/common/http";
@@ -17,7 +17,6 @@ import {TYPES_DOCUMENTS_BY_FOLDER_NAME} from "./typeDocument";
 @Injectable()
 export class DataService {
   themes: Map<string, Theme>;
-  trancheAges: Map<string, TrancheAge>;
   ateliers: Atelier[];
 
   ateliersBehaviorSubject: BehaviorSubject<Atelier[]>;
@@ -46,7 +45,6 @@ export class DataService {
 
   init() {
     this.themes = new Map();
-    this.trancheAges = new Map();
     this.ateliers = [];
 
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>(this.ateliers);
@@ -126,7 +124,7 @@ export class DataService {
   private parseFileToParts(fileString: string): { [key: string]: string } {
     try {
       let fileParts: { [key: string]: string } = {};
-      for (let part of fileString.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // mammoth quand il converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
+      for (let part of fileString.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // quand mammoth converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
         part = part.trim();
         if (part) {
           let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
@@ -160,15 +158,26 @@ export class DataService {
 
     let atelier: Atelier;
     try {
-      let tranchesDAagesStr = this.notMarked(fileParts.tranchesdages),
-          tranchesDAages: TrancheAge[];
-      if (tranchesDAagesStr) {
-        tranchesDAages = tranchesDAagesStr.split(',')
-          .map(label => {
-            let trancheAge = this.trancheAges.get(label) || new TrancheAge(label);
-            this.trancheAges.set(label, trancheAge);
-            return trancheAge;
-          })
+      let tranchesDAgesStr = this.notMarked(fileParts.tranchesdages),
+          tranchesDAges: Set<TrancheAge> = new Set<TrancheAge>();
+      if (tranchesDAgesStr) {
+        for (let trancheDAgeStr of tranchesDAgesStr.split(',')) {
+          let match;
+          if (match = /(\d+).*?(\d+)?/.exec(trancheDAgeStr)) {
+            let start = parseInt(match[1]),
+              end = parseInt(match[2]) || (start + 1);
+            for (let i = start; i < end; i++) {
+              tranchesDAges.add(TRANCHES_AGES_BY_AGE.get(i.toString()));
+            }
+          } else if (match = /([a-zA-Z])([a-zA-Z])?/.exec(trancheDAgeStr)) {
+            let key = match[1].toLowerCase(),
+              second = (match[2] || '').toLowerCase();
+            if (key == 'c') {
+              key += second;
+            }
+            tranchesDAges.add(TRANCHES_AGES_BY_KEY.get(key));
+          }
+        }
       }
       atelier = {
         sousTheme: this.notMarked(fileParts.soustheme),
@@ -183,7 +192,7 @@ export class DataService {
           marked(fileParts.gestetexte),
         ),
         envoi: marked(fileParts.envoi),
-        trancheAges: tranchesDAages,
+        tranchesAges: Array.from(tranchesDAges),
         theme: theme
       };
     } catch (error) {

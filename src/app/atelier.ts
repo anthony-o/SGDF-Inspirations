@@ -8,7 +8,7 @@ export class Atelier {
   parole: Parole;
   geste: Document;
   envoi: string;
-  trancheAges: TrancheAge[];
+  tranchesAges: TrancheAge[];
   sousTheme: string;
   theme: Theme;
 }

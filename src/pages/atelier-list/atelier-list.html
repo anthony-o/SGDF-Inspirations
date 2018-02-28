@@ -4,7 +4,7 @@
     <button ion-button menuToggle>
       <ion-icon name='menu'></ion-icon>
     </button>
-    <ion-title>Ateliers</ion-title>
+    <ion-title>Temps spirituels</ion-title>
     <ion-buttons end>
       <button ion-button icon-only color="royal" (click)="openHome()">
         <ion-icon name="home"></ion-icon>
@@ -21,6 +21,9 @@
       <h2><span class="emphase">{{atelier.sousTheme}}</span> <i>({{atelier.theme.label}})</i></h2>
       <h3>{{atelier.parole.titre}}</h3>
       <p>{{atelier.parole.reference}}</p>
+      <div *ngFor="let trancheAge of atelier.tranchesAges" class="logo">
+        <img src="../assets/imgs/{{trancheAge.cle}}.svg">
+      </div>
     </button>
   </ion-list>
 </ion-content>
