@@ -30,6 +30,15 @@ export class DataService {
   private onlineData: boolean = false;
 
   constructor(private http: HttpClient, private alertCtrl: AlertController) {
+    this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
+    this.themesBehaviorSubject = new BehaviorSubject<Theme[]>([]);
+
+    this.documentsBehaviorSubjectByFolderName = new Map<string, BehaviorSubject<Document[]>>();
+
+    for (let typeDocumentFolderName of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())) {
+      this.documentsBehaviorSubjectByFolderName.set(typeDocumentFolderName, new BehaviorSubject<Document[]>([]));
+    }
+
     this.init();
   }
 
@@ -47,15 +56,15 @@ export class DataService {
     this.themes = new Map();
     this.ateliers = [];
 
-    this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>(this.ateliers);
-    this.themesBehaviorSubject = new BehaviorSubject<Theme[]>([]);
+    this.ateliersBehaviorSubject.next(this.ateliers);
+
+    this.themesBehaviorSubject.next([]);
 
     this.documentsByFolderName = new Map<string, Document[]>();
-    this.documentsBehaviorSubjectByFolderName = new Map<string, BehaviorSubject<Document[]>>();
 
     for (let typeDocumentFolderName of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())) {
       let documents = [];
-      this.documentsBehaviorSubjectByFolderName.set(typeDocumentFolderName, new BehaviorSubject<Document[]>(documents));
+      this.documentsBehaviorSubjectByFolderName.get(typeDocumentFolderName).next(documents);
       this.documentsByFolderName.set(typeDocumentFolderName, documents);
     }
 
