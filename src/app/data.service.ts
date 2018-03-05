@@ -75,7 +75,7 @@ export class DataService {
         this.handleDataZip(base64EncodedDataZip, {base64: true});
       });
     } else {
-      this.http.get('/assets/data.zip', {responseType: 'arraybuffer'}).subscribe(dataZip => {
+      this.http.get('assets/data.zip', {responseType: 'arraybuffer'}).subscribe(dataZip => {
         this.handleDataZip(dataZip, {});
       });
     }
