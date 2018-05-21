@@ -4,7 +4,7 @@ const mammoth = require('mammoth');
 const fs = require('fs');
 const path = require('path');
 
-const FOLDER_NAMES_TO_HANDLE = ['ateliers', 'themes', 'tempsSpis', 'chants', 'gestes', 'textes', 'typesTempsSpis'];
+const FOLDER_NAMES_TO_HANDLE = ['ateliers', 'themes', 'tempsSpis', 'chants', 'gestes', 'textes', 'typesTempsSpis', 'documents-simples'];
 
 function handleErrorMessage(message) {
   return error => {

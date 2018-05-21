@@ -1,13 +1,20 @@
-import {Component, ViewChild} from '@angular/core';
-import {Nav, Platform} from 'ionic-angular';
-import {StatusBar} from '@ionic-native/status-bar';
-import {SplashScreen} from '@ionic-native/splash-screen';
-import {ThemeListPage} from "../pages/theme-list/theme-list";
-import {AtelierListPage} from "../pages/atelier-list/atelier-list";
-import {DataService} from "./data.service";
-import {DocumentListPage} from "../pages/document-list/document-list";
-import {HomePage} from "../pages/home/home";
-import {TYPES_DOCUMENTS_BY_FOLDER_NAME} from "./typeDocument";
+import { Component, ViewChild } from '@angular/core';
+import { Nav, Platform } from 'ionic-angular';
+import { StatusBar } from '@ionic-native/status-bar';
+import { SplashScreen } from '@ionic-native/splash-screen';
+import { ThemeListPage } from '../pages/theme-list/theme-list';
+import { AtelierListPage } from '../pages/atelier-list/atelier-list';
+import { DataService } from './data.service';
+import { DocumentListPage } from '../pages/document-list/document-list';
+import { HomePage } from '../pages/home/home';
+import { TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
+import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
+
+interface MenuPage {
+  title: string,
+  component?: any,
+  params?: any
+}
 
 @Component({
   templateUrl: 'app.html'
@@ -17,14 +24,14 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  menus: Array<{ title: string, pages: { title: string, component?: any, params?: any }[] }>;
+  menus: Array<{ title: string, pages: MenuPage[] }>;
 
   onlineData: boolean;
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public dataService: DataService) {
     this.initializeApp();
 
-    let outilsPages: { title: string, component?: any, params?: any }[] = [];
+    const outilsPages: MenuPage[] = [];
 
     for (let typeDocument of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.values())) {
       outilsPages.push({
@@ -38,21 +45,18 @@ export class MyApp {
       });
     }
 
-    // used for an example of ngFor and navigation
     this.menus = [
       {
         title: 'Préparer un temps spirituel', pages: [
-          {title: 'Méthode'},
+          {title: 'Méthode', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Méthode'}},
           {title: 'Temps spirituels en kit par thèmes', component: ThemeListPage},
           {title: 'Temps spirituels en kit', component: AtelierListPage},
         ]
-      },
-      {
+      }, {
         title: 'Outils', pages: outilsPages
-      },
-      {
+      }, {
         title: 'Autres', pages: [
-          {title: 'Contact'}
+          {title: 'Contact', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}}
         ]
       }
     ];

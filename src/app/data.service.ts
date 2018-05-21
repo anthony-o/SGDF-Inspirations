@@ -1,18 +1,19 @@
-import {Injectable} from "@angular/core";
-import {Theme} from "./theme";
-import {TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY} from "./trancheAge";
-import {Atelier} from "./atelier";
-import {AlertController} from "ionic-angular";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs/Observable";
-import "rxjs/add/operator/map";
-import "rxjs/add/operator/catch";
-import marked from "marked";
-import * as JSZip from "jszip";
-import * as mammoth from "mammoth";
-import {Document} from "./document";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
-import {TYPES_DOCUMENTS_BY_FOLDER_NAME} from "./typeDocument";
+import { Injectable } from '@angular/core';
+import { Theme } from './theme';
+import { TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY } from './trancheAge';
+import { Atelier } from './atelier';
+import { AlertController } from 'ionic-angular';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
+import marked from 'marked';
+import * as JSZip from 'jszip';
+import { JSZipObject } from 'jszip';
+import * as mammoth from 'mammoth';
+import { Document } from './document';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { SIMPLE_DOCUMENT_FILE_NAMES, TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 
 @Injectable()
 export class DataService {
@@ -25,9 +26,13 @@ export class DataService {
   documentsByFolderName: Map<string, Document[]>;
   documentsBehaviorSubjectByFolderName: Map<string, BehaviorSubject<Document[]>>;
 
+  simpleDocumentsBehaviorSubjectByFileName: Map<string, BehaviorSubject<string>>;
+
   private static FOLDER_NAMES_TO_HANDLE: string[] = ['ateliers', ...Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())];
 
   private onlineData: boolean = false;
+
+  private static DEFAULT_SIMPLE_DOCUMENT_CONTENT = '<h1>Chargement...</h1>';
 
   constructor(private http: HttpClient, private alertCtrl: AlertController) {
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
@@ -39,13 +44,19 @@ export class DataService {
       this.documentsBehaviorSubjectByFolderName.set(typeDocumentFolderName, new BehaviorSubject<Document[]>([]));
     }
 
+    this.simpleDocumentsBehaviorSubjectByFileName = new Map<string, BehaviorSubject<string>>();
+
+    for (let simpleDocumentFileName of SIMPLE_DOCUMENT_FILE_NAMES) {
+      this.simpleDocumentsBehaviorSubjectByFileName.set(simpleDocumentFileName, new BehaviorSubject<string>(DataService.DEFAULT_SIMPLE_DOCUMENT_CONTENT));
+    }
+
     this.init();
   }
 
   private handleError(error) {
-    let errorMessage = "Erreur lors de l'obtention des données : " + error.message;
+    const errorMessage = `Erreur lors de l'obtention des données : ${error.message}`;
     this.alertCtrl.create({
-      title: "Erreur lors de l'obtention des données",
+      title: `Erreur lors de l'obtention des données`,
       subTitle: errorMessage,
       buttons: ['Ignorer']
     });
@@ -63,9 +74,14 @@ export class DataService {
     this.documentsByFolderName = new Map<string, Document[]>();
 
     for (let typeDocumentFolderName of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())) {
-      let documents = [];
+      const documents = [];
       this.documentsBehaviorSubjectByFolderName.get(typeDocumentFolderName).next(documents);
       this.documentsByFolderName.set(typeDocumentFolderName, documents);
+    }
+
+    for (let simpleDocumentFileName of SIMPLE_DOCUMENT_FILE_NAMES) {
+      const content = DataService.DEFAULT_SIMPLE_DOCUMENT_CONTENT;
+      this.simpleDocumentsBehaviorSubjectByFileName.get(simpleDocumentFileName).next(content);
     }
 
     if (this.onlineData) {
@@ -85,11 +101,17 @@ export class DataService {
     JSZip.loadAsync(dataZip, options).then(jsZip => {
       // D'abord on traîte les dossiers de la racine
       for (let folderName of DataService.FOLDER_NAMES_TO_HANDLE) {
-        if (folderName == "ateliers") {
+        if (folderName == 'ateliers') {
           this.handleFolder(this.parseAtelierMd, folderName, jsZip);
         } else {
           this.handleFolder(this.parseDocumentHandler(folderName), folderName, jsZip);
         }
+      }
+      // Puis les fichier simples
+      for (let simpleDocumentFileName of SIMPLE_DOCUMENT_FILE_NAMES) {
+        jsZip.file(new RegExp(`${simpleDocumentFileName}`)).forEach((zipObject) => {
+          this.handleZipObject(zipObject.name, zipObject, (fileContent) => this.parseSimpleFile(fileContent, zipObject));
+        });
       }
     });
   }
@@ -97,34 +119,44 @@ export class DataService {
   private handleFolder(fileHandler: (fileParts: { [key: string]: string }) => void, folderPathFromRoot: string, jsZip: JSZip) {
     // Cette fonction va gérer
     jsZip.folder(folderPathFromRoot).forEach((relativePath, file) => {
-      if (relativePath.endsWith(".docx")) {
-        // Traitement des fichiers Word
-        file.async('arraybuffer').then(arrayBuffer => {
-          if (relativePath.endsWith(".md.docx")) {
-            // Un document Word dont le texte est formaté en Markdown
-            mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(result => {
-              console.log(result.messages);
-              this.handleFile(result.value, fileHandler);
-            }, this.handleError);
-          } else {
-            // Un document Word dont il faut convertir le contenu en Markdown
-            mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(result => {
-              console.log(result.messages);
-              this.handleFile(result.value, fileHandler);
-            }, this.handleError);
-          }
-        }, this.handleError);
-      } else {
-        // Il s'agit d'un fichier que l'on va interpréter comme un contenu texte simple
-        file.async('text').then(textContent => {
-          this.handleFile(textContent, fileHandler);
-        }, this.handleError);
-      }
+      this.handleZipObject(relativePath, file, (fileContent: string) => {
+        this.handleFile(fileContent, fileHandler);
+      });
     });
   }
 
+  private handleZipObject(relativePath, zipObject: JSZipObject, fileContentHandler: (fileContent: string) => void) {
+    if (relativePath.endsWith('.docx')) {
+      // Traitement des fichiers Word
+      zipObject.async('arraybuffer').then(arrayBuffer => {
+        if (relativePath.endsWith('.md.docx')) {
+          // Un document Word dont le texte est formaté en Markdown
+          mammoth.extractRawText({arrayBuffer: arrayBuffer}).then(result => {
+            if (result.messages && result.messages.length > 0) {
+              console.log(result.messages);
+            }
+            fileContentHandler(result.value);
+          }, this.handleError);
+        } else {
+          // Un document Word dont il faut convertir le contenu en Markdown
+          mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(result => {
+            if (result.messages && result.messages.length > 0) {
+              console.log(result.messages);
+            }
+            fileContentHandler(result.value);
+          }, this.handleError);
+        }
+      }, this.handleError);
+    } else {
+      // Il s'agit d'un fichier que l'on va interpréter comme un contenu texte simple
+      zipObject.async('text').then(textContent => {
+        fileContentHandler(textContent);
+      }, this.handleError);
+    }
+  }
+
   private handleFile(fileContent: string, fileHandler: (fileParts: { [key: string]: string }) => void) {
-    let parts = this.parseFileToParts(fileContent);
+    const parts = this.parseFileToParts(fileContent);
     if (parts) {
       fileHandler.bind(this)(parts);
     }
@@ -132,21 +164,21 @@ export class DataService {
 
   private parseFileToParts(fileString: string): { [key: string]: string } {
     try {
-      let fileParts: { [key: string]: string } = {};
+      const fileParts: { [key: string]: string } = {};
       for (let part of fileString.split(/^# ?(?:<a .*?<\/a>)?\\?-\\?->/m)) { // quand mammoth converti un fichier docx en markdown, garde les références en lien <a> pour chaque titre. Il faut donc les supprimer. Par ailleurs, il génère un \ devant les -.
         part = part.trim();
         if (part) {
-          let partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
+          const partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
           fileParts[partElements[1]
             .toLowerCase() // en minuscule
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
             .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
             ] = partElements[2].trim();
         }
       }
       return fileParts;
     } catch (error) {
-      console.error("Problème lors du parsing du fichier '"+fileString+"' : "+error.message);
+      console.error(`Problème lors du parsing du fichier '${fileString}' : ${error.message}`);
       return null;
     }
   }
@@ -157,7 +189,7 @@ export class DataService {
 
   private parseAtelierMd(fileParts: { [key: string]: string }): void {
     // Création de l'objet Atelier avec ces parties
-    let themeStr = fileParts.theme;
+    const themeStr = fileParts.theme;
     let theme: Theme = this.themes.get(themeStr);
     if (!theme) {
       theme = new Theme(themeStr);
@@ -167,8 +199,8 @@ export class DataService {
 
     let atelier: Atelier;
     try {
-      let tranchesDAgesStr = this.notMarked(fileParts.tranchesdages),
-          tranchesDAges: Set<TrancheAge> = new Set<TrancheAge>();
+      const tranchesDAgesStr = this.notMarked(fileParts.tranchesdages),
+        tranchesDAges: Set<TrancheAge> = new Set<TrancheAge>();
       if (tranchesDAgesStr) {
         for (let trancheDAgeStr of tranchesDAgesStr.split(',')) {
           let match;
@@ -205,7 +237,7 @@ export class DataService {
         theme: theme
       };
     } catch (error) {
-      console.error("Problème lors de la création d'un atelier : "+error.message);
+      console.error(`Problème lors de la création d'un atelier : ${error.message}`);
       console.log(fileParts);
       atelier = null;
     }
@@ -219,7 +251,7 @@ export class DataService {
   }
 
   private parseDocumentHandler(folderName: string): (fileParts: { [key: string]: string }) => void {
-    let documents: Document[] = this.documentsByFolderName.get(folderName);
+    const documents: Document[] = this.documentsByFolderName.get(folderName);
 
     return function (fileParts: { [key: string]: string }): void {
       let document: Document;
@@ -229,7 +261,7 @@ export class DataService {
           texte: marked(fileParts.texte)
         };
       } catch (error) {
-        console.error("Problème lors de la création d'un document : "+error.message);
+        console.error(`Problème lors de la création d'un document : ${error.message}`);
         console.log(fileParts);
         document = null;
       }
@@ -242,8 +274,18 @@ export class DataService {
     };
   }
 
+  private parseSimpleFile(fileContent: string, zipObject: JSZipObject): void {
+    const fileName = /([^\/]*?)\.md(\.docx)?$/.exec(zipObject.name);
+    if (fileName && fileName[1]) {
+      const simpleDocumentBehaviorSubject = this.simpleDocumentsBehaviorSubjectByFileName.get(fileName[1]);
+      if (simpleDocumentBehaviorSubject) {
+        simpleDocumentBehaviorSubject.next(marked(fileContent));
+      }
+    }
+  }
+
   private getThemesValues(): Theme[] {
-    return Array.from(this.themes.values())
+    return Array.from(this.themes.values());
   }
 
   getThemes(): Observable<Theme[]> {
@@ -260,6 +302,10 @@ export class DataService {
 
   getOnlineData(): boolean {
     return this.onlineData;
+  }
+
+  getSimpleDocumentByFileName(fileName: string): Observable<string> {
+    return this.simpleDocumentsBehaviorSubjectByFileName.get(fileName);
   }
 
   setOnlineData(onlineData: boolean) {
