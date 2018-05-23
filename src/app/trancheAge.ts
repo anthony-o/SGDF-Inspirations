@@ -3,7 +3,8 @@ export class TrancheAge {
     public label: string,
     public cle: string,
     public ages: string
-  ) {};
+  ) {
+  };
 }
 
 let farfadets = new TrancheAge('Farfadets', 'F', '6-8'),
@@ -15,8 +16,18 @@ let farfadets = new TrancheAge('Farfadets', 'F', '6-8'),
   marins = new TrancheAge('Marins', 'M', '14-17'),
   ventDuLarge = new TrancheAge('Vent du large', 'VDL', '17+');
 
+export const TRANCHES_AGES_LIST: TrancheAge[] = [
+  farfadets,
+  louveteauxJeannettes,
+  scoutsGuides,
+  pionniersCaravelles,
+  compagnons,
+  responsables,
+  marins,
+  ventDuLarge,
+];
 
-export var TRANCHES_AGES_BY_KEY: Map<string, TrancheAge> = new Map<string, TrancheAge>(Object.entries({  // Object => Map grâce à https://stackoverflow.com/a/36644558/535203
+export const TRANCHES_AGES_BY_KEY: Map<string, TrancheAge> = new Map<string, TrancheAge>(Object.entries({  // Object => Map grâce à https://stackoverflow.com/a/36644558/535203
   f: farfadets,
   l: louveteauxJeannettes,
   j: louveteauxJeannettes,
@@ -31,7 +42,7 @@ export var TRANCHES_AGES_BY_KEY: Map<string, TrancheAge> = new Map<string, Tranc
   v: ventDuLarge
 }));
 
-export var TRANCHES_AGES_BY_AGE: Map<string, TrancheAge> = new Map<string, TrancheAge>(Object.entries({  // Object => Map grâce à https://stackoverflow.com/a/36644558/535203
+export const TRANCHES_AGES_BY_AGE: Map<string, TrancheAge> = new Map<string, TrancheAge>(Object.entries({  // Object => Map grâce à https://stackoverflow.com/a/36644558/535203
   '6': farfadets,
   '7': farfadets,
   '8': louveteauxJeannettes,

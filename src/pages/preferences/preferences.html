@@ -1,0 +1,29 @@
+<ion-header>
+
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name='menu'></ion-icon>
+    </button>
+    <ion-title>Préférences</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only color="royal" (click)="openHome()">
+        <ion-icon name="home"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content>
+  <ion-list no-border>
+    <ion-list-header>Filtre de branches</ion-list-header>
+    <ion-item *ngFor="let trancheAge of trancheAges">
+      <ion-label>{{trancheAge.label}}</ion-label>
+      <ion-toggle [ngModel]="trancheAgeFilterValuesBehaviorSubjectByTrancheAge.get(trancheAge) | async" (ionChange)="changeTrancheAgeFilterValue(trancheAge, $event)"></ion-toggle>
+      <div class="logo" item-start>
+        <img src="assets/imgs/{{trancheAge.cle}}.svg">
+      </div>
+    </ion-item>
+  </ion-list>
+</ion-content>

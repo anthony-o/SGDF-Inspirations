@@ -15,6 +15,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { DocumentListPage } from '../pages/document-list/document-list';
 import { DocumentPage } from '../pages/document/document';
 import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
+import { IonicStorageModule } from '@ionic/storage';
+import { PreferencesPage } from '../pages/preferences/preferences';
 
 @NgModule({
   declarations: [
@@ -26,11 +28,13 @@ import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
     DocumentListPage,
     DocumentPage,
     SimpleDocumentPage,
+    PreferencesPage,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     IonicModule.forRoot(MyApp),
+    IonicStorageModule.forRoot(),
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -42,6 +46,7 @@ import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
     DocumentListPage,
     DocumentPage,
     SimpleDocumentPage,
+    PreferencesPage,
   ],
   providers: [
     StatusBar,

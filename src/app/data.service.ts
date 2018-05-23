@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Theme } from './theme';
-import { TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY } from './trancheAge';
+import { TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY, TRANCHES_AGES_LIST } from './trancheAge';
 import { Atelier } from './atelier';
 import { AlertController } from 'ionic-angular';
 import { HttpClient } from '@angular/common/http';
@@ -14,6 +14,7 @@ import * as mammoth from 'mammoth';
 import { Document } from './document';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { SIMPLE_DOCUMENT_FILE_NAMES, TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
+import { Storage } from '@ionic/storage';
 
 @Injectable()
 export class DataService {
@@ -28,13 +29,16 @@ export class DataService {
 
   simpleDocumentsBehaviorSubjectByFileName: Map<string, BehaviorSubject<string>>;
 
+  trancheAgeFilterValuesBehaviorSubjectByTrancheAge: Map<TrancheAge, BehaviorSubject<boolean>> = new Map<TrancheAge, BehaviorSubject<boolean>>();
+  activatedTrancheAgeFilterSet: Set<TrancheAge> = new Set<TrancheAge>();
+
   private static FOLDER_NAMES_TO_HANDLE: string[] = ['ateliers', ...Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())];
 
   private onlineData: boolean = false;
 
   private static DEFAULT_SIMPLE_DOCUMENT_CONTENT = '<h1>Chargement...</h1>';
 
-  constructor(private http: HttpClient, private alertCtrl: AlertController) {
+  constructor(private http: HttpClient, private alertCtrl: AlertController, private storage: Storage) {
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
     this.themesBehaviorSubject = new BehaviorSubject<Theme[]>([]);
 
@@ -50,17 +54,40 @@ export class DataService {
       this.simpleDocumentsBehaviorSubjectByFileName.set(simpleDocumentFileName, new BehaviorSubject<string>(DataService.DEFAULT_SIMPLE_DOCUMENT_CONTENT));
     }
 
+    for (let trancheAge of TRANCHES_AGES_LIST) {
+      const filter = new BehaviorSubject<boolean>(true);
+      this.trancheAgeFilterValuesBehaviorSubjectByTrancheAge.set(trancheAge, filter);
+      // Récupération de la valeur actuelle du store
+      this.storage.get(`trancheAgeFilter${trancheAge.cle}`)
+        .then((filterValue) => filter.next(filterValue === null ? true : filterValue)) // on initialise à "true" si le filtre n'était pas initialisé au préalable
+        .catch((error) => this.handleErrorWithMessage(error, `Erreur lors de la récupération d'une préférence`));
+      // Maintenance du set des tranches d'âges activées
+      filter.subscribe((filterValue) => {
+        if (filterValue) {
+          this.activatedTrancheAgeFilterSet.add(trancheAge);
+        } else {
+          this.activatedTrancheAgeFilterSet.delete(trancheAge);
+        }
+        this.storage.set(`trancheAgeFilter${trancheAge.cle}`, filterValue).catch((error) => this.handleErrorWithMessage(error, `Erreur lors de l'enregistrement d'une préférence`));
+      });
+    }
+
     this.init();
   }
 
-  private handleError(error) {
-    const errorMessage = `Erreur lors de l'obtention des données : ${error.message}`;
+  private handleErrorWithMessage(error, message) {
+    const errorMessage = `${message} : ${error.message}`;
     this.alertCtrl.create({
-      title: `Erreur lors de l'obtention des données`,
+      title: message,
       subTitle: errorMessage,
       buttons: ['Ignorer']
     });
     console.error(errorMessage);
+    console.error(error);
+  }
+
+  private handleReadDataFromZipError(error) {
+    this.handleErrorWithMessage(error, `Erreur lors de l'obtention des données`);
   }
 
   init() {
@@ -136,7 +163,7 @@ export class DataService {
               console.log(result.messages);
             }
             fileContentHandler(result.value);
-          }, this.handleError);
+          }, this.handleReadDataFromZipError);
         } else {
           // Un document Word dont il faut convertir le contenu en Markdown
           mammoth.convertToMarkdown({arrayBuffer: arrayBuffer}).then(result => {
@@ -144,14 +171,14 @@ export class DataService {
               console.log(result.messages);
             }
             fileContentHandler(result.value);
-          }, this.handleError);
+          }, this.handleReadDataFromZipError);
         }
-      }, this.handleError);
+      }, this.handleReadDataFromZipError);
     } else {
       // Il s'agit d'un fichier que l'on va interpréter comme un contenu texte simple
       zipObject.async('text').then(textContent => {
         fileContentHandler(textContent);
-      }, this.handleError);
+      }, this.handleReadDataFromZipError);
     }
   }
 
@@ -268,8 +295,6 @@ export class DataService {
 
       if (document) {
         documents.push(document);
-
-        // this.documentsBehaviorSubjectByFolderName.get(folderName).next(documents); // Rafraîchissement de la liste de ce type de document
       }
     };
   }
@@ -293,7 +318,17 @@ export class DataService {
   }
 
   getAteliers(): Observable<Atelier[]> {
-    return this.ateliersBehaviorSubject;
+    const dataService = this;
+    return this.ateliersBehaviorSubject.map(
+      (ateliers) => ateliers.filter(
+        (atelier) => {
+          for (let trancheAge of atelier.tranchesAges) {
+            if (dataService.activatedTrancheAgeFilterSet.has(trancheAge)) {
+              return true;
+            }
+          }
+          return false;
+        }));
   }
 
   getDocumentsByFolderName(folderName: string): Observable<Document[]> {

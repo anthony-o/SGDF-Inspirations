@@ -23,6 +23,9 @@
         <ion-label>Données en ligne</ion-label>
         <ion-toggle [(ngModel)]="onlineData" (ionChange)="updateOnlineData()"></ion-toggle>
       </button>
+      <button menuClose ion-item (click)="openPreferencesPage()">
+        Préférences
+      </button>
     </ion-list>
   </ion-content>
 

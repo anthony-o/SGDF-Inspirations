@@ -9,6 +9,7 @@ import { DocumentListPage } from '../pages/document-list/document-list';
 import { HomePage } from '../pages/home/home';
 import { TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
+import { PreferencesPage } from '../pages/preferences/preferences';
 
 interface MenuPage {
   title: string,
@@ -56,7 +57,7 @@ export class MyApp {
         title: 'Outils', pages: outilsPages
       }, {
         title: 'Autres', pages: [
-          {title: 'Contact', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}}
+          {title: 'Contact', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}},
         ]
       }
     ];
@@ -81,6 +82,10 @@ export class MyApp {
 
   openHome() {
     this.nav.setRoot(HomePage);
+  }
+
+  openPreferencesPage() {
+    this.nav.setRoot(PreferencesPage);
   }
 
   updateOnlineData() {
