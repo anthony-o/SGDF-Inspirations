@@ -45,6 +45,7 @@ export class MyApp {
         }
       });
     }
+    outilsPages.push({title: 'Gestes', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Gestes'}});
 
     this.menus = [
       {

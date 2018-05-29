@@ -12,7 +12,9 @@
     "lint": "ionic-app-scripts lint",
     "ionic:build": "ionic-app-scripts build",
     "ionic:serve": "ionic-app-scripts serve",
-    "synchronize": "node tools/synchroniser_data.zip_local.js"
+    "synchronize": "node tools/synchroniser_data.zip_local.js",
+    "synchronize:local": "node tools/synchroniser_data.zip_local.js data.zip",
+    "build:apk": "ionic cordova build android --prod --release"
   },
   "dependencies": {
     "@angular/common": "5.2.7",
