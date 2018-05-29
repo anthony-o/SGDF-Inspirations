@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="io.ionic.starter" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>SGDF-Inspirations</name>
-    <description>An awesome Ionic/Cordova app.</description>
-    <author email="hi@ionicframework" href="http://ionicframework.com/">Ionic Framework Team</author>
+    <description>Mobile application helping scout leaders to create spiritual times</description>
+    <author email="netangel+github@gmail.com" href="https://github.com/anthony-o/SGDF-Inspirations">Anthony O.</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
@@ -86,5 +86,5 @@
         <variable name="UPDATE_METHOD" value="background" />
     </plugin>
     <plugin name="cordova-plugin-splashscreen" spec="5.0.2" />
-    <engine name="android" spec="~7.1.0" />
+    <engine name="android" spec="7.1.0" />
 </widget>

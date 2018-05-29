@@ -1,9 +1,11 @@
 {
   "name": "SGDF-Inspirations",
+  "description": "Mobile application helping scout leaders to create spiritual times",
   "version": "0.0.1",
   "author": "Anthony O.",
-  "homepage": "http://ionicframework.com/",
+  "homepage": "https://github.com/anthony-o/SGDF-Inspirations",
   "private": true,
+  "license": "AGPL-3.0-only",
   "scripts": {
     "clean": "ionic-app-scripts clean",
     "build": "ionic-app-scripts build",
@@ -50,7 +52,6 @@
     "ionic": "3.20.0",
     "typescript": "2.6.2"
   },
-  "description": "An Ionic project",
   "cordova": {
     "plugins": {
       "cordova-plugin-ionic": {
