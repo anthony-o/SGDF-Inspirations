@@ -196,11 +196,13 @@ export class DataService {
         part = part.trim();
         if (part) {
           const partElements = /^(.+)$\s+([\s\S]*)/m.exec(part); // Utilisation de [\s\S] au lieu de . pour matcher les retours chariots https://stackoverflow.com/a/16119722/535203
-          fileParts[partElements[1]
-            .toLowerCase() // en minuscule
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
-            .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
-            ] = partElements[2].trim();
+          if (partElements) {
+            fileParts[partElements[1]
+              .toLowerCase() // en minuscule
+              .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // suppression des accents grâce à https://stackoverflow.com/a/37511463/535203
+              .replace(/\W/g, '') // suppression des charactères autres qu'alphanumériques
+              ] = partElements[2].trim();
+          }
         }
       }
       return fileParts;
