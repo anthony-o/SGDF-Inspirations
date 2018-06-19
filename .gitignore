@@ -36,5 +36,4 @@ $RECYCLE.BIN/
 Thumbs.db
 UserInterfaceState.xcuserstate
 
-/data.zip.base64
-/data.zip
+data.zip*

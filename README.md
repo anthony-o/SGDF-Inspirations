@@ -8,6 +8,8 @@ Installer les dépendances suivantes :
 - [Yarn](https://yarnpkg.com/lang/en/docs/install/)
 - [Ionic](https://ionicframework.com/docs/intro/installation/)
 
+Puis lancer une [synchronisation des données](#synchroniser-les-données-pour-les-intégrer-dans-lapplication).
+
 ## Installation pour la création de binaires
 ### Android
 Installer les dépendances suivantes (comme précisé dans la [documentation d'Ionic](https://ionicframework.com/docs/intro/deploying/)) :
