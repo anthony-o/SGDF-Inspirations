@@ -1,9 +1,7 @@
-import { Compiler, Component, NgModule, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { IonicModule, NavController, NavParams } from 'ionic-angular';
+import { Component, ComponentFactory, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { NavController, NavParams } from 'ionic-angular';
 import { OpenHomePage } from '../open-home';
 import { DataService } from '../../app/data.service';
-import { MyApp } from '../../app/app.component';
-import { AppModule } from '../../app/app.module';
 
 @Component({
   selector: 'page-simple-document',
@@ -21,7 +19,6 @@ export class SimpleDocumentPage extends OpenHomePage implements OnInit {
     public navParams: NavParams,
     public dataService: DataService,
     // private sanitizer: DomSanitizer,
-    private compiler: Compiler,
   ) {
     super(navCtrl);
     this.simpleDocumentFileName = this.navParams.get('simpleDocumentFileName');
@@ -31,30 +28,14 @@ export class SimpleDocumentPage extends OpenHomePage implements OnInit {
   }
 
   ngOnInit() {
-    this.dataService.getSimpleDocumentByFileName(this.simpleDocumentFileName).subscribe((content) => {
-      this.addComponent(content);
+    this.dataService.getSimpleDocumentComponentFactoryByFileName(this.simpleDocumentFileName).subscribe((componentFactory) => {
+      this.addComponent(componentFactory);
     });
   }
 
   // Création dynamique de template grâce à https://stackoverflow.com/a/39507831/535203
-  private addComponent(template: string, properties: any = {}) {
-    @Component({template})
-    class TemplateComponent {}
-
-    @NgModule({
-      declarations: [TemplateComponent],
-      imports: [
-        AppModule,
-        IonicModule.forRoot(MyApp),
-      ],
-    })
-    class TemplateModule {}
-
-    const mod = this.compiler.compileModuleAndAllComponentsSync(TemplateModule);
-    const factory = mod.componentFactories.find((comp) =>
-      comp.componentType === TemplateComponent
-    );
-    const component = this.container.createComponent(factory);
+  private addComponent(componentFactory: ComponentFactory<any>, properties: any = {}) {
+    const component = this.container.createComponent(componentFactory);
     Object.assign(component.instance, properties);
     // If properties are changed at a later stage, the change detection
     // may need to be triggered manually:

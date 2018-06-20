@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Compiler, Component, ComponentFactory, Injectable, NgModule } from '@angular/core';
 import { Theme } from './theme';
 import { TrancheAge, TRANCHES_AGES_BY_AGE, TRANCHES_AGES_BY_KEY, TRANCHES_AGES_LIST } from './trancheAge';
 import { Atelier } from './atelier';
-import { AlertController } from 'ionic-angular';
+import { AlertController, IonicModule } from 'ionic-angular';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
@@ -15,6 +15,8 @@ import { Document } from './document';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { SIMPLE_DOCUMENT_FILE_NAMES, TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 import { Storage } from '@ionic/storage';
+import { AppModule } from './app.module';
+import { MyApp } from './app.component';
 
 @Injectable()
 export class DataService {
@@ -28,6 +30,7 @@ export class DataService {
   documentsBehaviorSubjectByFolderName: Map<string, BehaviorSubject<Document[]>>;
 
   simpleDocumentsBehaviorSubjectByFileName: Map<string, BehaviorSubject<string>>;
+  simpleDocumentsComponentFactoryBehaviorSubjectByFileName: Map<string, BehaviorSubject<ComponentFactory<any>>>;
 
   trancheAgeFilterValuesBehaviorSubjectByTrancheAge: Map<TrancheAge, BehaviorSubject<boolean>> = new Map<TrancheAge, BehaviorSubject<boolean>>();
   activatedTrancheAgeFilterSet: Set<TrancheAge> = new Set<TrancheAge>();
@@ -38,7 +41,12 @@ export class DataService {
 
   private static DEFAULT_SIMPLE_DOCUMENT_CONTENT = '<h1>Chargement...</h1>';
 
-  constructor(private http: HttpClient, private alertCtrl: AlertController, private storage: Storage) {
+  constructor(
+    private http: HttpClient,
+    private alertCtrl: AlertController,
+    private storage: Storage,
+    private compiler: Compiler,
+  ) {
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
     this.themesBehaviorSubject = new BehaviorSubject<Theme[]>([]);
 
@@ -49,9 +57,11 @@ export class DataService {
     }
 
     this.simpleDocumentsBehaviorSubjectByFileName = new Map<string, BehaviorSubject<string>>();
+    this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName = new Map<string, BehaviorSubject<ComponentFactory<any>>>();
 
     for (let simpleDocumentFileName of SIMPLE_DOCUMENT_FILE_NAMES) {
       this.simpleDocumentsBehaviorSubjectByFileName.set(simpleDocumentFileName, new BehaviorSubject<string>(DataService.DEFAULT_SIMPLE_DOCUMENT_CONTENT));
+      this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName.set(simpleDocumentFileName, new BehaviorSubject<ComponentFactory<any>>(null));
     }
 
     for (let trancheAge of TRANCHES_AGES_LIST) {
@@ -109,6 +119,7 @@ export class DataService {
     for (let simpleDocumentFileName of SIMPLE_DOCUMENT_FILE_NAMES) {
       const content = DataService.DEFAULT_SIMPLE_DOCUMENT_CONTENT;
       this.simpleDocumentsBehaviorSubjectByFileName.get(simpleDocumentFileName).next(content);
+      this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName.get(simpleDocumentFileName).next(this.createComponentFactoryFromTemplate(content));
     }
 
     if (this.onlineData) {
@@ -302,11 +313,17 @@ export class DataService {
   }
 
   private parseSimpleFile(fileContent: string, zipObject: JSZipObject): void {
-    const fileName = /([^\/]*?)\.md(\.docx)?$/.exec(zipObject.name);
-    if (fileName && fileName[1]) {
-      const simpleDocumentBehaviorSubject = this.simpleDocumentsBehaviorSubjectByFileName.get(fileName[1]);
+    const fileNameRegExp = /([^\/]*?)\.md(\.docx)?$/.exec(zipObject.name);
+    let fileName = fileNameRegExp[1];
+    if (fileNameRegExp && fileName) {
+      const markedFileContent = marked(fileContent);
+      const simpleDocumentBehaviorSubject = this.simpleDocumentsBehaviorSubjectByFileName.get(fileName);
       if (simpleDocumentBehaviorSubject) {
-        simpleDocumentBehaviorSubject.next(marked(fileContent));
+        simpleDocumentBehaviorSubject.next(markedFileContent);
+      }
+      const simpleDocumentComponentFactoryBehaviorSubject = this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName.get(fileName);
+      if (simpleDocumentComponentFactoryBehaviorSubject) {
+        simpleDocumentComponentFactoryBehaviorSubject.next(this.createComponentFactoryFromTemplate(markedFileContent));
       }
     }
   }
@@ -341,8 +358,32 @@ export class DataService {
     return this.onlineData;
   }
 
+  getSimpleDocumentComponentFactoryByFileName(fileName: string): Observable<ComponentFactory<any>> {
+    return this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName.get(fileName);
+  }
+
   getSimpleDocumentByFileName(fileName: string): Observable<string> {
     return this.simpleDocumentsBehaviorSubjectByFileName.get(fileName);
+  }
+
+  // Création dynamique de template grâce à https://stackoverflow.com/a/39507831/535203
+  private createComponentFactoryFromTemplate(template: string): ComponentFactory<any> {
+    @Component({template})
+    class TemplateComponent {}
+
+    @NgModule({
+      declarations: [TemplateComponent],
+      imports: [
+        AppModule,
+        IonicModule.forRoot(MyApp),
+      ],
+    })
+    class TemplateModule {}
+
+    const mod = this.compiler.compileModuleAndAllComponentsSync(TemplateModule);
+    return mod.componentFactories.find((comp) =>
+      comp.componentType === TemplateComponent
+    );
   }
 
   setOnlineData(onlineData: boolean) {
