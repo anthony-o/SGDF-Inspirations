@@ -8,7 +8,11 @@ Installer les dépendances suivantes :
 - [Yarn](https://yarnpkg.com/lang/en/docs/install/)
 - [Ionic](https://ionicframework.com/docs/intro/installation/)
 
-Puis lancer une [synchronisation des données](#synchroniser-les-données-pour-les-intégrer-dans-lapplication).
+Installer les dépendances via la commande suivante à la racine du projet :
+```bash
+yarn
+```
+Puis lancer une [synchronisation des données](#synchroniser-les-données-pour-les-intégrer-dans-lapplication) afin de créer le fichier `/src/assets/data.zip`.
 
 ## Installation pour la création de binaires
 ### Android
@@ -24,7 +28,7 @@ yarn ionic:serve
 ```
 
 ## Synchroniser les données pour les intégrer dans l'application
-Aller dans le dossier `Données application` sur le drive, et le télécharger au format zip. Il sera alors téléchargé sous un nom similaire à `Données application-20180529T220051Z-001.zip`.
+Pour créer le fichier `/src/assets/data.zip` (qui contient l'ensemble du contenu de l'application, non livré avec les sources), aller dans le dossier `Données application` sur le drive, et le télécharger au format zip. Il sera alors téléchargé sous un nom similaire à `Données application-20180529T220051Z-001.zip`.
 
 Exécuter le script de synchonisation local de cette manière (en remplaçant `/chemin/vers/le/Données application-20180529T220051Z-001.zip` par le chemin vers votre fichier zip):
 ```bash

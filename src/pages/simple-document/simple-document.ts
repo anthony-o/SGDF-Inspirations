@@ -2,9 +2,6 @@ import { Compiler, Component, NgModule, OnInit, ViewChild, ViewContainerRef } fr
 import { IonicModule, NavController, NavParams } from 'ionic-angular';
 import { OpenHomePage } from '../open-home';
 import { DataService } from '../../app/data.service';
-import { Observable } from 'rxjs/Observable';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { map } from 'rxjs/operators';
 import { MyApp } from '../../app/app.component';
 import { AppModule } from '../../app/app.module';
 
