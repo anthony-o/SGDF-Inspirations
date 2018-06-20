@@ -23,7 +23,7 @@ ion-label.label p {
 */
 
 .emphase {
-  color: dodgerblue;
+  color: map-get($colors, emphasis);
 }
 
 /*
@@ -71,7 +71,12 @@ div.logo {
   display: inline;
 
   img {
-    width: 2em;
+    width: 4em;
     height: 2em;
   }
+}
+
+ion-list-header ion-label.label {
+  text-transform: uppercase;
+  color: map-get($colors, primary);
 }

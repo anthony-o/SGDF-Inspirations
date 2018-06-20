@@ -12,14 +12,14 @@
 </ion-header>
 
 <ion-content padding>
-  <h1>Accueil</h1>
+  <h1 class="emphase"><ion-icon name="body"></ion-icon> Accueil</h1>
   <div [innerHTML]="atelier.accueil"></div>
-  <h1>Parole : <em>{{atelier.parole.titre}}</em></h1>
+  <h1><span class="emphase"><ion-icon name="text"></ion-icon> Parole</span> : <em>{{atelier.parole.titre}}</em></h1>
   <div [innerHTML]="atelier.parole.texte"></div>
   <em>{{atelier.parole.reference}}</em>
-  <h1>Geste : <em>{{atelier.geste.titre}}</em></h1>
+  <h1><span class="emphase"><ion-icon name="hand"></ion-icon> Geste</span> : <em>{{atelier.geste.titre}}</em></h1>
   <div [innerHTML]="atelier.geste.texte"></div>
-  <h1>Envoi</h1>
+  <h1 class="emphase"><ion-icon name="cloud-upload"></ion-icon> Envoi</h1>
   <div [innerHTML]="atelier.envoi"></div>
   <h4>Tranches d'âges :</h4>
   <ul>

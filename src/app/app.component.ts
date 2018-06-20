@@ -12,9 +12,16 @@ import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
 import { PreferencesPage } from '../pages/preferences/preferences';
 
 interface MenuPage {
-  title: string,
+  title?: string,
+  iconName?: string,
   component?: any,
   params?: any
+}
+
+interface MenuPageGroup {
+  title?: string,
+  iconName?: string,
+  pages: MenuPage[],
 }
 
 @Component({
@@ -25,7 +32,7 @@ export class MyApp {
 
   rootPage: any = HomePage;
 
-  menus: Array<{ title: string, pages: MenuPage[] }>;
+  menus: Array<MenuPageGroup>;
 
   onlineData: boolean;
 
@@ -37,6 +44,7 @@ export class MyApp {
     for (let typeDocument of Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.values())) {
       outilsPages.push({
         title: typeDocument.titrePluriel,
+        iconName: typeDocument.iconName,
         component: DocumentListPage,
         params: {
           documentsType: typeDocument.titrePluriel,
@@ -45,21 +53,17 @@ export class MyApp {
         }
       });
     }
-    outilsPages.push({title: 'Gestes', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Gestes'}});
+    outilsPages.push({title: 'Gestes', iconName: 'hand', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Gestes'}});
 
     this.menus = [
       {
-        title: 'Préparer un temps spirituel', pages: [
-          {title: 'Méthode', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Méthode'}},
-          {title: 'Temps spirituels en kit par thèmes', component: ThemeListPage},
-          {title: 'Temps spirituels en kit', component: AtelierListPage},
+        title: 'Temps spirituels', iconName: 'contract', pages: [
+          {title: 'Méthode', iconName: 'bulb', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Méthode'}},
+          {title: 'Par thèmes', iconName: 'albums', component: ThemeListPage},
+          {title: 'Par ordre alphabétique', iconName: 'list', component: AtelierListPage},
         ]
       }, {
-        title: 'Outils', pages: outilsPages
-      }, {
-        title: 'Autres', pages: [
-          {title: 'Contact', component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}},
-        ]
+        title: 'Outils', iconName: 'build', pages: outilsPages
       }
     ];
 
@@ -75,10 +79,11 @@ export class MyApp {
     });
   }
 
-  openPage(page) {
+  openPage(page: MenuPage) {
     // Reset the content nav to have just this page
     // we wouldn't want the back button to show in this scenario
-    this.nav.setRoot(page.component, page.params);
+    this.openHome();
+    this.nav.push(page.component, page.params);
   }
 
   openHome() {
@@ -86,7 +91,11 @@ export class MyApp {
   }
 
   openPreferencesPage() {
-    this.nav.setRoot(PreferencesPage);
+    this.openPage({component: PreferencesPage});
+  }
+
+  openContactPage() {
+    this.openPage({component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}});
   }
 
   updateOnlineData() {
