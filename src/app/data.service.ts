@@ -333,25 +333,29 @@ export class DataService {
   }
 
   getThemes(): Observable<Theme[]> {
-    return this.themesBehaviorSubject;
+    return this.themesBehaviorSubject.map((themes) => themes.sort((t1, t2) => t1.label && t1.label.localeCompare(t2.label)));
   }
 
   getAteliers(): Observable<Atelier[]> {
     const dataService = this;
+    // TODO mettre en cache la liste triée
     return this.ateliersBehaviorSubject.map(
-      (ateliers) => ateliers.filter(
-        (atelier) => {
-          for (let trancheAge of atelier.tranchesAges) {
-            if (dataService.activatedTrancheAgeFilterSet.has(trancheAge)) {
-              return true;
+      (ateliers) => ateliers
+        .filter(
+          (atelier) => {
+            for (let trancheAge of atelier.tranchesAges) {
+              if (dataService.activatedTrancheAgeFilterSet.has(trancheAge)) {
+                return true;
+              }
             }
-          }
-          return false;
-        }));
+            return false;
+          })
+        .sort((a1, a2) => a1.sousTheme && a1.sousTheme.localeCompare(a2.sousTheme))
+    );
   }
 
   getDocumentsByFolderName(folderName: string): Observable<Document[]> {
-    return this.documentsBehaviorSubjectByFolderName.get(folderName);
+    return this.documentsBehaviorSubjectByFolderName.get(folderName).map((documents) => documents.sort((d1, d2) => d1.titre && d1.titre.localeCompare(d2.titre))); // TODO tri mis en cache
   }
 
   getOnlineData(): boolean {

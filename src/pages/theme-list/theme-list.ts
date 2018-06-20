@@ -26,6 +26,6 @@ export class ThemeListPage extends OpenHomePage {
   }
 
   themeSelected(theme: Theme) {
-    this.navCtrl.push(AtelierListPage, {ateliers: theme.ateliers});
+    this.navCtrl.push(AtelierListPage, {ateliers: theme.ateliers.sort((a1, a2) => a1.sousTheme && a1.sousTheme.localeCompare(a2.sousTheme))}); // TODO sort d'une meilleure manière
   }
 }
