@@ -35,8 +35,6 @@ Exécuter le script de synchonisation local de cette manière (en remplaçant `/
 node tools/synchroniser_data.zip_local.js '/chemin/vers/le/Données application-20180529T220051Z-001.zip'
 ```
 
-Le projet sera modifié, il faudra ensuite commiter et pusher les changements.
-
 ## Création de binaires
 ### Android
 Dans le dossier racine du projet, lancer la commande suivante :
