@@ -18,4 +18,5 @@ export const SIMPLE_DOCUMENT_FILE_NAMES: string[] = [
   'Méthode',
   'Contact',
   'Gestes',
+  'Cléophas',
 ];

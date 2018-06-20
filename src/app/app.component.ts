@@ -90,6 +90,10 @@ export class MyApp {
     this.nav.setRoot(HomePage);
   }
 
+  openCleophasPage() {
+    this.openPage({component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Cléophas'}});
+  }
+
   openPreferencesPage() {
     this.openPage({component: PreferencesPage});
   }
