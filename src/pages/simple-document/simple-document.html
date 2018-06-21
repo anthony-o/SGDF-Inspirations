@@ -13,5 +13,5 @@
 
 
 <ion-content padding>
-  <div #container></div>
+  <div [innerHTML]="content$ | async"></div>
 </ion-content>
