@@ -17,6 +17,7 @@ import { DocumentPage } from '../pages/document/document';
 import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
 import { IonicStorageModule } from '@ionic/storage';
 import { PreferencesPage } from '../pages/preferences/preferences';
+import { File } from '@ionic-native/file';
 
 @NgModule({
   declarations: [
@@ -52,6 +53,7 @@ import { PreferencesPage } from '../pages/preferences/preferences';
     StatusBar,
     SplashScreen,
     DataService,
+    File,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
   ]
 })

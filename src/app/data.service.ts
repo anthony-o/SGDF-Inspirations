@@ -15,6 +15,7 @@ import { Document } from './document';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { SIMPLE_DOCUMENT_FILE_NAMES, TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 import { Storage } from '@ionic/storage';
+import { File } from '@ionic-native/file';
 
 @Injectable()
 export class DataService {
@@ -43,6 +44,7 @@ export class DataService {
     private http: HttpClient,
     private alertCtrl: AlertController,
     private storage: Storage,
+    private file: File,
     // private compiler: Compiler,
   ) {
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
@@ -120,17 +122,23 @@ export class DataService {
       // this.simpleDocumentsComponentFactoryBehaviorSubjectByFileName.get(simpleDocumentFileName).next(this.createComponentFactoryFromTemplate(content));
     }
 
-    if (this.onlineData) {
-      // C'est en ligne, on va récupérer le contenu du Goole Doc suivant dont le contenu est le fichier zip encodé en base64
-      this.http.get('https://docs.google.com/document/d/1rtncxTc2mvGYXI6H9kGmQsJwW7IaTuFcqcvL9tM2e-4/export?format=txt', {responseType: 'text'}).subscribe(base64EncodedDataZip => {
-        // Puis on traite le fichier normalement
-        this.handleDataZip(base64EncodedDataZip, {base64: true});
-      });
-    } else {
-      this.http.get('assets/data.zip', {responseType: 'arraybuffer'}).subscribe(dataZip => {
+    // if (this.onlineData) {
+    //   // C'est en ligne, on va récupérer le contenu du Goole Doc suivant dont le contenu est le fichier zip encodé en base64
+    //   this.http.get('https://docs.google.com/document/d/1rtncxTc2mvGYXI6H9kGmQsJwW7IaTuFcqcvL9tM2e-4/export?format=txt', {responseType: 'text'}).subscribe(base64EncodedDataZip => {
+    //     // Puis on traite le fichier normalement
+    //     this.handleDataZip(base64EncodedDataZip, {base64: true});
+    //   });
+    // } else {
+      // this.http.get('assets/data.zip', {responseType: 'arraybuffer'}).subscribe(dataZip => {
+      //   this.handleDataZip(dataZip, {});
+      // });
+    // }
+    this.file.readAsArrayBuffer(this.file.applicationDirectory, 'www/assets/data.zip')
+      .then(dataZip => {
         this.handleDataZip(dataZip, {});
-      });
-    }
+      })
+      .catch((error) => this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip`))
+    ;
   }
 
   private handleDataZip(dataZip: any, options: any) {
