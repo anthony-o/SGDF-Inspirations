@@ -133,12 +133,23 @@ export class DataService {
       //   this.handleDataZip(dataZip, {});
       // });
     // }
-    this.file.readAsArrayBuffer(this.file.applicationDirectory, 'www/assets/data.zip')
-      .then(dataZip => {
+    // this.file.readAsArrayBuffer(this.file.applicationDirectory, 'www/assets/data.zip')
+    //   .then(dataZip => {
+    //     this.handleDataZip(dataZip, {});
+    //   })
+    //   .catch((error) => this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip`))
+    // ;
+    this.http.get('assets/data.zip', {responseType: 'arraybuffer'}).subscribe(
+      dataZip => {
         this.handleDataZip(dataZip, {});
-      })
-      .catch((error) => this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip`))
-    ;
+      },
+      error => {
+        this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip - Nouvel essai dans 1s`);
+        setTimeout(() => {
+          this.init(); // initialisation dans un timeout pour ne pas figer la vue
+        }, 1000);
+      }
+    );
   }
 
   private handleDataZip(dataZip: any, options: any) {
