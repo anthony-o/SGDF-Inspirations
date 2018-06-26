@@ -37,3 +37,8 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 
 data.zip*
+
+resources/android/icon/*.png
+resources/android/splash/*.png
+resources/ios/icon/*.png
+resources/ios/splash/*.png

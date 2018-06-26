@@ -6,3 +6,5 @@ Cordova reference documentation:
 
 - Icons: https://cordova.apache.org/docs/en/latest/config_ref/images.html
 - Splash Screens: https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-splashscreen/
+
+Install [Open Sans](https://fonts.google.com/specimen/Open+Sans) font then open icon.svg & splash.svg with Inkscape, and export as PNG.

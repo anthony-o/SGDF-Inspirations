@@ -15,10 +15,10 @@
     <preference name="android-minSdkVersion" value="19" />
     <preference name="BackupWebStorage" value="none" />
     <preference name="SplashMaintainAspectRatio" value="true" />
-    <preference name="FadeSplashScreenDuration" value="300" />
-    <preference name="SplashShowOnlyFirstTime" value="false" />
+    <preference name="FadeSplashScreenDuration" value="500" />
+    <preference name="SplashShowOnlyFirstTime" value="true" />
     <preference name="SplashScreen" value="screen" />
-    <preference name="SplashScreenDelay" value="300" />
+    <preference name="SplashScreenDelay" value="3000" />
     <platform name="android">
         <allow-intent href="market:*" />
         <icon density="ldpi" src="resources/android/icon/drawable-ldpi-icon.png" />
@@ -86,9 +86,7 @@
         <variable name="UPDATE_METHOD" value="background" />
     </plugin>
     <plugin name="cordova-plugin-splashscreen" spec="5.0.2" />
-    <content src="index.html" />
     <plugin name="cordova-plugin-file" spec="6.0.1" />
     <engine name="android" spec="7.1.0" />
     <engine name="ios" spec="4.5.4" />
-    <allow-navigation href="http://192.168.1.13:8100" />
 </widget>

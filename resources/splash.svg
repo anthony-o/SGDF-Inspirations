@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="2732"
+   height="2732"
+   viewBox="0 0 722.84165 722.84169"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="splash.svg"
+   inkscape:export-filename="splash.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.25"
+     inkscape:cx="692.20904"
+     inkscape:cy="1372.6571"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     showguides="true"
+     inkscape:measure-start="2204.51,1453.09"
+     inkscape:measure-end="462.798,1234.13"
+     inkscape:snap-to-guides="true"
+     inkscape:snap-grids="true"
+     inkscape:window-width="1566"
+     inkscape:window-height="925"
+     inkscape:window-x="1790"
+     inkscape:window-y="127"
+     inkscape:window-maximized="0">
+    <sodipodi:guide
+       position="202.78056,520.0611"
+       orientation="1199.1705,0"
+       id="guide4516"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="202.78056,202.78058"
+       orientation="0,1199.1705"
+       id="guide4518"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="520.0611,202.78058"
+       orientation="-1199.1705,0"
+       id="guide4520"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="520.0611,520.0611"
+       orientation="0,-1199.1705"
+       id="guide4522"
+       inkscape:locked="false" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,425.84168)">
+    <image
+       sodipodi:absref="/home/netangel/Projets/SGDF-Inspirations/resources/../src/assets/imgs/homeBackground.jpg"
+       xlink:href="../src/assets/imgs/homeBackground.jpg"
+       style=""
+       y="-425.84167"
+       x="-180.71045"
+       id="image4570"
+       preserveAspectRatio="none"
+       height="722.84167"
+       width="1084.2626" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4487"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:93.33333588px;line-height:1.25;font-family:'Open Sans';-inkscape-font-specification:'Open Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       transform="matrix(0.56994535,0,0,0.56994535,-344.01863,-786.94012)"><flowRegion
+         id="flowRegion4489"><rect
+           id="rect4491"
+           width="589.69397"
+           height="119.4317"
+           x="955.45355"
+           y="1209.2458" /></flowRegion><flowPara
+         id="flowPara4493">Inspirations</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot4487-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:93.33333588px;line-height:1.25;font-family:'Open Sans';-inkscape-font-specification:'Open Sans';letter-spacing:0px;word-spacing:0px;fill:#1e90ff;fill-opacity:1;stroke:none"
+       transform="matrix(0.56994536,0,0,0.56994536,-291.34275,-786.94064)"><flowRegion
+         id="flowRegion4489-5"
+         style="fill:#1e90ff;fill-opacity:1"><rect
+           id="rect4491-6"
+           width="589.69397"
+           height="119.4317"
+           x="955.45355"
+           y="1209.2458"
+           style="fill:#1e90ff;fill-opacity:1" /></flowRegion><flowPara
+         id="flowPara4493-3">spi</flowPara></flowRoot>  </g>
+</svg>
