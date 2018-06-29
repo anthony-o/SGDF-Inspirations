@@ -14,7 +14,8 @@
     "ionic:serve": "ionic-app-scripts serve",
     "synchronize": "node tools/synchroniser_data.zip_local.js",
     "synchronize:local": "node tools/synchroniser_data.zip_local.js data.zip",
-    "build:apk": "ionic cordova build android --prod --release"
+    "build:apk": "ionic cordova build android --prod --release",
+    "postinstall": "ionic cordova resources"
   },
   "dependencies": {
     "@angular/common": "5.2.7",

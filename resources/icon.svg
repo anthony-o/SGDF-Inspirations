@@ -28,17 +28,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.7"
-     inkscape:cx="119.42686"
-     inkscape:cy="778.53239"
+     inkscape:zoom="0.75390625"
+     inkscape:cx="512"
+     inkscape:cy="512"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1319"
-     inkscape:window-height="660"
-     inkscape:window-x="2121"
-     inkscape:window-y="258"
+     inkscape:window-width="1487"
+     inkscape:window-height="965"
+     inkscape:window-x="2038"
+     inkscape:window-y="71"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata4522">
@@ -57,6 +57,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-26.06665)">
+    <rect
+       style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.82160604;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect4486"
+       width="270.93332"
+       height="270.93332"
+       x="7.1207683e-06"
+       y="26.066658" />
     <flowRoot
        xml:space="preserve"
        id="flowRoot5070"
