@@ -10,6 +10,8 @@ import { HomePage } from '../pages/home/home';
 import { TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
 import { PreferencesPage } from '../pages/preferences/preferences';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { DebugPage } from '../pages/debug/debug';
 
 interface MenuPage {
   title?: string,
@@ -35,6 +37,9 @@ export class MyApp {
   menus: Array<MenuPageGroup>;
 
   onlineData: boolean;
+
+  displayDebug: BehaviorSubject<boolean>;
+
 
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, public dataService: DataService) {
     this.initializeApp();
@@ -68,6 +73,8 @@ export class MyApp {
     ];
 
     this.onlineData = this.dataService.getOnlineData();
+
+    this.displayDebug = this.dataService.displayDebug;
   }
 
   initializeApp() {
@@ -100,6 +107,10 @@ export class MyApp {
 
   openContactPage() {
     this.openPage({component: SimpleDocumentPage, params: {simpleDocumentFileName: 'Contact'}});
+  }
+
+  openDebugPage() {
+    this.openPage({component: DebugPage});
   }
 
   updateOnlineData() {

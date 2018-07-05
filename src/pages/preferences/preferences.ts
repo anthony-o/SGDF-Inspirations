@@ -13,11 +13,14 @@ export class PreferencesPage extends OpenHomePage {
   private trancheAgeFilterValuesBehaviorSubjectByTrancheAge: Map<TrancheAge, BehaviorSubject<boolean>>;
   trancheAges: TrancheAge[];
 
+  displayDebug: BehaviorSubject<boolean>;
+
   constructor(public navCtrl: NavController, public navParams: NavParams, dataService: DataService) {
     super(navCtrl);
 
     this.trancheAgeFilterValuesBehaviorSubjectByTrancheAge = dataService.trancheAgeFilterValuesBehaviorSubjectByTrancheAge;
     this.trancheAges = Array.from(dataService.trancheAgeFilterValuesBehaviorSubjectByTrancheAge.keys());
+    this.displayDebug = dataService.displayDebug;
   }
 
   changeTrancheAgeFilterValue(trancheAge: TrancheAge, event: Toggle) {

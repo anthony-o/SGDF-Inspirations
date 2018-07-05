@@ -18,6 +18,7 @@ import { SimpleDocumentPage } from '../pages/simple-document/simple-document';
 import { IonicStorageModule } from '@ionic/storage';
 import { PreferencesPage } from '../pages/preferences/preferences';
 import { File } from '@ionic-native/file';
+import { DebugPage } from '../pages/debug/debug';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { File } from '@ionic-native/file';
     DocumentPage,
     SimpleDocumentPage,
     PreferencesPage,
+    DebugPage,
   ],
   imports: [
     BrowserModule,
@@ -48,6 +50,7 @@ import { File } from '@ionic-native/file';
     DocumentPage,
     SimpleDocumentPage,
     PreferencesPage,
+    DebugPage,
   ],
   providers: [
     StatusBar,

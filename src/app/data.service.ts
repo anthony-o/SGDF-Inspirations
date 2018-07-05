@@ -7,6 +7,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/retryWhen';
+import 'rxjs/add/operator/timeoutWith';
+import 'rxjs/add/operator/delay';
+import 'rxjs/add/observable/throw';
 import marked from 'marked';
 import * as JSZip from 'jszip';
 import { JSZipObject } from 'jszip';
@@ -15,7 +19,12 @@ import { Document } from './document';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { SIMPLE_DOCUMENT_FILE_NAMES, TYPES_DOCUMENTS_BY_FOLDER_NAME } from './typeDocument';
 import { Storage } from '@ionic/storage';
-import { File } from '@ionic-native/file';
+// import { File } from '@ionic-native/file';
+
+export class ErrorMessage {
+  constructor(public message: String, public error: Error, public date: Date) {
+  }
+}
 
 @Injectable()
 export class DataService {
@@ -34,9 +43,13 @@ export class DataService {
   trancheAgeFilterValuesBehaviorSubjectByTrancheAge: Map<TrancheAge, BehaviorSubject<boolean>> = new Map<TrancheAge, BehaviorSubject<boolean>>();
   activatedTrancheAgeFilterSet: Set<TrancheAge> = new Set<TrancheAge>();
 
+  errorMessages: ErrorMessage[] = [];
+
   private static FOLDER_NAMES_TO_HANDLE: string[] = ['ateliers', ...Array.from(TYPES_DOCUMENTS_BY_FOLDER_NAME.keys())];
 
   private onlineData: boolean = false;
+
+  displayDebug: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private static DEFAULT_SIMPLE_DOCUMENT_CONTENT = '<h1>Chargement...</h1>';
 
@@ -44,7 +57,7 @@ export class DataService {
     private http: HttpClient,
     private alertCtrl: AlertController,
     private storage: Storage,
-    private file: File,
+    // private file: File,
     // private compiler: Compiler,
   ) {
     this.ateliersBehaviorSubject = new BehaviorSubject<Atelier[]>([]);
@@ -87,13 +100,15 @@ export class DataService {
 
   private handleErrorWithMessage(error, message) {
     const errorMessage = `${message} : ${error.message}`;
-    this.alertCtrl.create({
-      title: message,
+    const alert = this.alertCtrl.create({
+      title: 'Problème de données',
       subTitle: errorMessage,
       buttons: ['Ignorer']
     });
     console.error(errorMessage);
     console.error(error);
+    this.errorMessages.push(new ErrorMessage(message, error, new Date()));
+    alert.present();
   }
 
   private handleReadDataFromZipError(error) {
@@ -139,17 +154,20 @@ export class DataService {
     //   })
     //   .catch((error) => this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip`))
     // ;
-    this.http.get('assets/data.zip', {responseType: 'arraybuffer'}).subscribe(
-      dataZip => {
-        this.handleDataZip(dataZip, {});
-      },
-      error => {
-        this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip - Nouvel essai dans 1s`);
-        setTimeout(() => {
-          this.init(); // initialisation dans un timeout pour ne pas figer la vue
-        }, 1000);
-      }
-    );
+    this.http.get('assets/data.zip', {responseType: 'arraybuffer'})
+      .retryWhen(errors => errors.delay(1000))
+      .timeoutWith(5000, Observable.throw(new Error('Chargement excessivement long (> 5s)')))
+      .subscribe(
+        dataZip => {
+          this.handleDataZip(dataZip, {});
+        },
+        error => {
+          this.handleErrorWithMessage(error, `Erreur lors de la récupération du data.zip - Nouvel essai dans 1s`);
+          setTimeout(() => {
+            this.init(); // initialisation dans un timeout pour ne pas figer la vue
+          }, 1000);
+        }
+      )
   }
 
   private handleDataZip(dataZip: any, options: any) {
